@@ -7,6 +7,9 @@ use App\Enums\ProductGender;
 use App\Enums\ProductOptionMode;
 use App\Enums\ProductType;
 use App\Http\Requests\StoreProductRequest;
+use App\Http\Requests\UpdateProductBasicRequest;
+use App\Http\Requests\UpdateProductMediaRequest;
+use App\Http\Requests\UpdateProductOptionsRequest;
 use App\Http\Requests\UpdateProductRequest;
 use App\Models\Product;
 use App\Models\ProductReview;
@@ -139,6 +142,74 @@ class ProductController extends Controller
         $product->delete();
 
         return redirect()->route('products.index')->with('success', 'Produk dihapus.');
+    }
+
+    public function updateBasic(UpdateProductBasicRequest $request, Product $product): JsonResponse|RedirectResponse
+    {
+        $data = $request->validated();
+
+        if (array_key_exists('slug', $data) && empty($data['slug']) && ! empty($data['name'])) {
+            $data['slug'] = Str::slug($data['name']);
+        }
+
+        if (! empty($data)) {
+            $product->update($data);
+        }
+
+        $product->refresh()->load(['images', 'options.choices']);
+
+        if ($request->expectsJson() || $request->wantsJson()) {
+            return response()->json([
+                'slug' => $product->slug,
+                'product' => $product->toStorePayload() + [
+                    'is_active' => $product->is_active,
+                    'created_at' => $product->created_at?->toISOString(),
+                    'updated_at' => $product->updated_at?->toISOString(),
+                ],
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'Info dasar disimpan.');
+    }
+
+    public function updateMedia(UpdateProductMediaRequest $request, Product $product): JsonResponse|RedirectResponse
+    {
+        $data = $request->validated();
+
+        DB::transaction(function () use ($product, $data, $request) {
+            $this->syncImages($product, $data['images'] ?? [], $request);
+        });
+
+        $product->refresh()->load(['images']);
+
+        if ($request->expectsJson() || $request->wantsJson()) {
+            return response()->json([
+                'images' => $product->images->pluck('path')->all(),
+                'image' => $product->image,
+                'detail_image' => $product->detail_image,
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'Media disimpan.');
+    }
+
+    public function updateOptions(UpdateProductOptionsRequest $request, Product $product): JsonResponse|RedirectResponse
+    {
+        $data = $request->validated();
+
+        DB::transaction(function () use ($product, $data) {
+            $this->syncOptions($product, $data['options'] ?? []);
+        });
+
+        $product->refresh()->load(['options.choices']);
+
+        if ($request->expectsJson() || $request->wantsJson()) {
+            return response()->json([
+                'options' => $product->options->map(fn ($o) => $o->toStorePayload())->all(),
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'Varian disimpan.');
     }
 
     public function reviewsPage(Request $request, Product $product, ?ProductReview $review = null): Response

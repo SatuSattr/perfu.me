@@ -1,6 +1,7 @@
 import { Link, useForm } from '@inertiajs/react';
 import { ArrowLeft, Check, X } from 'lucide-react';
-import { useEffect, useMemo } from 'react';
+import * as React from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Input, TextArea } from '@/components/ui/input';
 import { Button, ButtonLink } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -9,6 +10,7 @@ import { Combobox } from '@/components/form/combobox';
 import { MediaSection, type MediaItem } from './media-section';
 import { VariantsSection } from './variants-section';
 import type { OptionItem } from './variant-panel';
+import { InfoPanel } from './info-panel';
 
 interface Enums {
     genders: string[];
@@ -246,20 +248,17 @@ export function ProductForm({ initialData, enums, isEdit = false, className = ''
         }
     }
 
-    const showCapsule = !isEdit || isDirty;
+    const showCapsule = !isEdit;
 
-    return (
-        <form onSubmit={submit} className={cn('flex flex-col gap-6', showCapsule && 'pb-20', className)}>
-            <div className="flex items-center gap-3">
-                <ButtonLink href="/products" variant="secondary" size="icon" aria-label="Kembali">
-                    <ArrowLeft size={14} strokeWidth={1.8} />
-                </ButtonLink>
-                <div>
-                    <h1 className="font-sans text-[18px] font-semibold text-[#1a1a1a] tracking-tight leading-none">{isEdit ? 'Edit Produk' : 'Tambah Produk'}</h1>
-                    <p className="font-sans text-[11px] text-[#888] mt-1">{isEdit ? `Mengubah ${initialData?.name}` : 'Buat produk baru yang akan tampil di store'}</p>
-                </div>
-            </div>
+    // For edit mode, per-panel saves; keep currentSlug for async media/options after slug change
+    const [currentSlug, setCurrentSlug] = React.useState(initialData?.slug ?? '');
 
+    React.useEffect(() => {
+        if (initialData?.slug) setCurrentSlug(initialData.slug);
+    }, [initialData?.slug]);
+
+    const renderCreateForm = () => (
+        <>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
                 <div className="bg-white border border-[#e6e6e6] rounded-2xl p-5 sm:p-6">
                     <h3 className="font-sans text-[12px] font-semibold tracking-[0.12em] uppercase text-[#1a1a1a]">Informasi Dasar</h3>
@@ -291,6 +290,51 @@ export function ProductForm({ initialData, enums, isEdit = false, className = ''
             </div>
 
             <VariantsSection options={form.data.options as unknown as OptionItem[]} onChange={(next) => form.setData('options', next as unknown as typeof form.data.options)} type={form.data.type as 'signature' | 'inspired'} />
+        </>
+    );
+
+    const renderEditForm = () => {
+        if (!initialData) return null;
+        const infoInitial = {
+            name: initialData.name ?? '',
+            slug: initialData.slug ?? '',
+            tagline: initialData.tagline ?? '',
+            description: initialData.description ?? '',
+            gender: initialData.gender ?? 'Pria',
+            price: initialData.price ?? 0,
+            stock: (initialData.stock as unknown as string) ?? '',
+            category: initialData.category ?? 'EDP',
+            type: (initialData.type as unknown as string) ?? 'signature',
+            size_label: initialData.sizeLabel ?? '',
+            is_active: initialData.is_active ?? true,
+        } as unknown as React.ComponentProps<typeof InfoPanel>['initial'];
+        return (
+            <>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
+                    <InfoPanel productSlug={currentSlug} initial={infoInitial} enums={enums} onSlugChange={setCurrentSlug} className="h-full" />
+                    <MediaSection productSlug={currentSlug} autoSave images={form.data.images} onChange={(next) => form.setData('images', next)} error={(form.errors as unknown as Record<string, string>)['images.0.file']} className="h-full flex flex-col" />
+                </div>
+
+                <VariantsSection productSlug={currentSlug} autoSave options={form.data.options as unknown as OptionItem[]} onChange={(next) => form.setData('options', next as unknown as typeof form.data.options)} type={form.data.type as 'signature' | 'inspired'} />
+            </>
+        );
+    };
+
+    const formSubmit = isEdit ? (e: React.FormEvent) => e.preventDefault() : submit;
+
+    return (
+        <form onSubmit={formSubmit} className={cn('flex flex-col gap-6', showCapsule && 'pb-20', className)}>
+            <div className="flex items-center gap-3">
+                <ButtonLink href="/products" variant="secondary" size="icon" aria-label="Kembali">
+                    <ArrowLeft size={14} strokeWidth={1.8} />
+                </ButtonLink>
+                <div>
+                    <h1 className="font-sans text-[18px] font-semibold text-[#1a1a1a] tracking-tight leading-none">{isEdit ? 'Edit Produk' : 'Tambah Produk'}</h1>
+                    <p className="font-sans text-[11px] text-[#888] mt-1">{isEdit ? `Mengubah ${initialData?.name}` : 'Buat produk baru yang akan tampil di store'}</p>
+                </div>
+            </div>
+
+            {isEdit ? renderEditForm() : renderCreateForm()}
 
             {showCapsule && (
                 <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-white border border-[#e6e6e6] rounded-full shadow-[0_8px_24px_rgba(0,0,0,0.12)] px-2 py-2 flex items-center gap-1 sm:gap-2 max-w-[calc(100vw-32px)]">

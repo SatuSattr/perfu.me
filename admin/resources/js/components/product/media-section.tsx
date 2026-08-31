@@ -1,8 +1,9 @@
 import { ImagePlus } from "lucide-react";
-import { useRef } from "react";
+import { useRef, useState } from "react";
+import { router } from "@inertiajs/react";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
 import { ImageCard } from "./image-card";
+import { ConfirmDialog } from "@/components/feedback/confirm-dialog";
 
 export interface MediaItem {
     path: string;
@@ -16,6 +17,8 @@ interface Props {
     onChange: (next: MediaItem[]) => void;
     error?: string;
     className?: string;
+    productSlug?: string;
+    autoSave?: boolean;
 }
 
 export function MediaSection({
@@ -23,8 +26,38 @@ export function MediaSection({
     onChange,
     error,
     className = "",
+    productSlug,
+    autoSave = false,
 }: Props) {
     const inputRef = useRef<HTMLInputElement>(null);
+    const [confirmDeleteIdx, setConfirmDeleteIdx] = useState<number | null>(null);
+    const [saving, setSaving] = useState(false);
+
+    function renumber(list: MediaItem[]) {
+        list.forEach((item, idx) => {
+            item.position = idx;
+        });
+    }
+
+    function persist(next: MediaItem[]) {
+        onChange(next);
+        if (!autoSave || !productSlug || saving) return;
+        setSaving(true);
+        const payload = {
+            images: next.map((img, idx) => ({
+                path: img.file ? '' : img.path,
+                position: idx,
+                file: img.file ?? null,
+            })),
+        };
+        router.patch(`/products/${productSlug}/media`, payload as never, {
+            preserveScroll: true,
+            // @ts-expect-error forceFormData is valid for Inertia
+            forceFormData: true,
+            headers: { Accept: 'application/json' },
+            onFinish: () => setSaving(false),
+        } as never);
+    }
 
     function handleFiles(files: FileList | null) {
         if (!files) return;
@@ -38,14 +71,8 @@ export function MediaSection({
             next.push({ path: preview, file, preview, position: next.length });
         }
         renumber(next);
-        onChange(next);
+        persist(next);
         if (inputRef.current) inputRef.current.value = "";
-    }
-
-    function renumber(list: MediaItem[]) {
-        list.forEach((item, idx) => {
-            item.position = idx;
-        });
     }
 
     function removeAt(index: number) {
@@ -53,7 +80,8 @@ export function MediaSection({
         if (item?.preview && item.file) URL.revokeObjectURL(item.preview);
         const next = images.filter((_, i) => i !== index);
         renumber(next);
-        onChange(next);
+        persist(next);
+        setConfirmDeleteIdx(null);
     }
 
     function move(from: number, to: number) {
@@ -62,7 +90,7 @@ export function MediaSection({
         const [moved] = next.splice(from, 1);
         next.splice(to, 0, moved);
         renumber(next);
-        onChange(next);
+        persist(next);
     }
 
     return (
@@ -82,15 +110,15 @@ export function MediaSection({
                         store
                     </p>
                 </div>
-                <Button
-                    variant="primary"
-                    size="md"
+                <button
+                    type="button"
                     onClick={() => inputRef.current?.click()}
                     disabled={images.length >= 6}
+                    aria-label="Tambah foto"
+                    className="p-2 text-[#888] hover:text-[#1a1a1a] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                 >
-                    <ImagePlus size={14} strokeWidth={1.5} />
-                    Tambah Foto
-                </Button>
+                    <ImagePlus size={20} strokeWidth={1.5} />
+                </button>
                 <input
                     ref={inputRef}
                     type="file"
@@ -111,21 +139,23 @@ export function MediaSection({
                     </p>
                 </div>
             ) : (
-                <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-                    {images.map((img, idx) => (
-                        <ImageCard
-                            key={`${img.path}-${idx}`}
-                            src={img.preview ?? img.path}
-                            isPrimary={idx === 0}
-                            isDetail={idx === 1}
-                            position={idx}
-                            canUp={idx > 0}
-                            canDown={idx < images.length - 1}
-                            onUp={() => move(idx, idx - 1)}
-                            onDown={() => move(idx, idx + 1)}
-                            onRemove={() => removeAt(idx)}
-                        />
-                    ))}
+                <div className="max-h-[380px] overflow-y-auto pr-1 -mr-1">
+                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                        {images.map((img, idx) => (
+                            <ImageCard
+                                key={`${img.path}-${idx}`}
+                                src={img.preview ?? img.path}
+                                isPrimary={idx === 0}
+                                isDetail={idx === 1}
+                                position={idx}
+                                canUp={idx > 0}
+                                canDown={idx < images.length - 1}
+                                onUp={() => move(idx, idx - 1)}
+                                onDown={() => move(idx, idx + 1)}
+                                onRemove={() => setConfirmDeleteIdx(idx)}
+                            />
+                        ))}
+                    </div>
                 </div>
             )}
 
@@ -137,6 +167,19 @@ export function MediaSection({
                     {error}
                 </p>
             )}
+
+            <ConfirmDialog
+                open={confirmDeleteIdx !== null}
+                title="Hapus foto?"
+                message={`Foto #${(confirmDeleteIdx ?? 0) + 1} akan dihapus. Tindakan ini tidak dapat dibatalkan.`}
+                confirmText="Hapus"
+                cancelText="Batal"
+                variant="danger"
+                onCancel={() => setConfirmDeleteIdx(null)}
+                onConfirm={() => {
+                    if (confirmDeleteIdx !== null) removeAt(confirmDeleteIdx);
+                }}
+            />
         </div>
     );
 }

@@ -25,6 +25,10 @@ Route::middleware('auth:admin')->group(function () {
     Route::put('/products/{product}/reviews/{review}', [ProductController::class, 'updateReview'])->name('products.reviews.update');
     Route::delete('/products/{product}/reviews', [ProductController::class, 'destroyReviews'])->name('products.reviews.destroy');
 
+    Route::patch('/products/{product:slug}/basic', [ProductController::class, 'updateBasic'])->name('products.basic.update');
+    Route::patch('/products/{product:slug}/media', [ProductController::class, 'updateMedia'])->name('products.media.update');
+    Route::patch('/products/{product:slug}/options', [ProductController::class, 'updateOptions'])->name('products.options.update');
+
     Route::resource('products', ProductController::class)->parameters([
         'products' => 'product:slug',
     ])->except(['show']);

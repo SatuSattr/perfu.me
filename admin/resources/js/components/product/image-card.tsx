@@ -28,7 +28,7 @@ export function ImageCard({ src, isPrimary, isDetail, position, canUp, canDown, 
                     Detail
                 </span>
             ) : null}
-            <div className="absolute inset-x-1 bottom-1 flex items-center justify-between gap-0.5">
+            <div className="absolute inset-x-1 bottom-1 flex items-center justify-between gap-0.5 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity duration-200">
                 <span className="bg-white/90 backdrop-blur text-[#1a1a1a] text-[8px] font-sans font-medium px-1 py-0.5 rounded-full border border-[#e6e6e6] leading-none">#{position + 1}</span>
                 <div className="flex items-center gap-0.5">
                     <Button variant="secondary" size="icon-sm" onClick={onUp} disabled={!canUp} aria-label="Pindah ke atas" className="bg-white/90 backdrop-blur h-5 w-5 p-0">
