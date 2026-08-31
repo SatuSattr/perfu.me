@@ -1,5 +1,6 @@
 import { ChevronDown, ChevronUp, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
 export interface ChoiceItem {
@@ -58,32 +59,15 @@ export function ChoiceRow({ choice, canUp, canDown, onUp, onDown, onRemove, onCh
                 <Input label="Stok" type="number" value={choice.stock} onChange={(e) => onChange({ stock: Number(e.target.value) })} className="py-2.5 text-[12px]" />
             </div>
             <div className="col-span-12 sm:col-span-1 flex items-center justify-end sm:justify-center gap-1 pt-1">
-                <button
-                    type="button"
-                    onClick={onUp}
-                    disabled={!canUp}
-                    aria-label="Pindah ke atas"
-                    className="w-7 h-7 rounded-full bg-white border border-[#e6e6e6] text-[#555] hover:border-[#1a1a1a] inline-flex items-center justify-center transition-colors disabled:opacity-40"
-                >
+                <Button variant="secondary" size="icon-sm" onClick={onUp} disabled={!canUp} aria-label="Pindah ke atas">
                     <ChevronUp size={12} strokeWidth={1.8} />
-                </button>
-                <button
-                    type="button"
-                    onClick={onDown}
-                    disabled={!canDown}
-                    aria-label="Pindah ke bawah"
-                    className="w-7 h-7 rounded-full bg-white border border-[#e6e6e6] text-[#555] hover:border-[#1a1a1a] inline-flex items-center justify-center transition-colors disabled:opacity-40"
-                >
+                </Button>
+                <Button variant="secondary" size="icon-sm" onClick={onDown} disabled={!canDown} aria-label="Pindah ke bawah">
                     <ChevronDown size={12} strokeWidth={1.8} />
-                </button>
-                <button
-                    type="button"
-                    onClick={onRemove}
-                    aria-label="Hapus pilihan"
-                    className="w-7 h-7 rounded-full bg-white border border-[#e6e6e6] text-[#888] hover:border-red-400 hover:text-red-500 inline-flex items-center justify-center transition-colors"
-                >
+                </Button>
+                <Button variant="outline" size="icon-sm" onClick={onRemove} aria-label="Hapus pilihan" className="text-[#888] hover:border-red-400 hover:text-red-500">
                     <X size={12} strokeWidth={1.8} />
-                </button>
+                </Button>
             </div>
         </div>
     );

@@ -1,6 +1,7 @@
 import { Plus } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 import { SearchBar } from '@/components/ui/search-bar';
 import { CheckedCombobox } from '@/components/ui/checked-combobox';
 import { ReviewCard, type ReviewItem } from './review-card';
@@ -200,14 +201,10 @@ export function ReviewsSection({ reviews, onChange, productSlug, className = '' 
         <div className={cn('bg-white border border-[#e6e6e6] rounded-2xl p-5 sm:p-6 flex flex-col gap-4', className)}>
             <div className="flex flex-col sm:flex-row gap-3 sm:items-center justify-between">
                 <h3 className="font-sans text-[12px] font-semibold tracking-[0.12em] uppercase text-[#1a1a1a] shrink-0">Ulasan</h3>
-                <button
-                    type="button"
-                    onClick={add}
-                    className="inline-flex items-center gap-2 bg-[#1a1a1a] text-white border border-[#1a1a1a] hover:bg-[#333] font-sans text-[11px] uppercase tracking-[0.12em] px-4 py-2 rounded-full transition-colors shrink-0 self-start sm:self-auto"
-                >
+                <Button variant="primary" size="md" onClick={add} className="self-start sm:self-auto">
                     <Plus size={14} strokeWidth={1.8} />
                     Tambah Ulasan
-                </button>
+                </Button>
             </div>
 
             <div className="flex flex-col lg:flex-row gap-3">
@@ -317,25 +314,20 @@ export function ReviewsSection({ reviews, onChange, productSlug, className = '' 
                         Hal {page} dari {totalPages} · {total} ulasan
                     </span>
                     <div className="flex items-center gap-1.5">
-                        <button
-                            type="button"
-                            disabled={page <= 1}
-                            onClick={() => setPage((p) => Math.max(1, p - 1))}
-                            className="px-3 py-1.5 rounded-full border border-[#e6e6e6] bg-white text-[#555] hover:border-[#1a1a1a] font-sans text-[11px] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                        >
+                        <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>
                             Prev
-                        </button>
+                        </Button>
                         <span className="font-sans text-[11px] text-[#888] px-2">
                             {page}/{totalPages}
                         </span>
-                        <button
-                            type="button"
+                        <Button
+                            variant="outline"
+                            size="sm"
                             disabled={page >= totalPages}
                             onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                            className="px-3 py-1.5 rounded-full border border-[#e6e6e6] bg-white text-[#555] hover:border-[#1a1a1a] font-sans text-[11px] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                         >
                             Next
-                        </button>
+                        </Button>
                     </div>
                 </div>
             )}

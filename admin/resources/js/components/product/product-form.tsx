@@ -2,7 +2,7 @@ import { Link, useForm } from '@inertiajs/react';
 import { ArrowLeft } from 'lucide-react';
 import { useEffect, useMemo } from 'react';
 import { Input, TextArea } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
+import { Button, ButtonLink } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { cn } from '@/lib/utils';
 import { Combobox } from '@/components/form/combobox';
@@ -153,9 +153,9 @@ export function ProductForm({ initialData, enums, isEdit = false, className = ''
     return (
         <form onSubmit={submit} className={cn('flex flex-col gap-6', className)}>
             <div className="flex items-center gap-3">
-                <Link href="/products" className="w-8 h-8 rounded-full border border-[#e6e6e6] bg-white text-[#555] hover:border-[#1a1a1a] inline-flex items-center justify-center transition-colors">
+                <ButtonLink href="/products" variant="secondary" size="icon" aria-label="Kembali">
                     <ArrowLeft size={14} strokeWidth={1.8} />
-                </Link>
+                </ButtonLink>
                 <div>
                     <h1 className="font-sans text-[18px] font-semibold text-[#1a1a1a] tracking-tight leading-none">{isEdit ? 'Edit Produk' : 'Tambah Produk'}</h1>
                     <p className="font-sans text-[11px] text-[#888] mt-1">{isEdit ? `Mengubah ${initialData?.name}` : 'Buat produk baru yang akan tampil di store'}</p>
@@ -250,10 +250,10 @@ export function ProductForm({ initialData, enums, isEdit = false, className = ''
             <div className="sticky bottom-0 z-10 bg-[#fafafa]/80 backdrop-blur border border-[#e6e6e6] rounded-2xl p-4 flex items-center justify-between gap-4">
                 <p className="font-sans text-[11px] text-[#888] hidden sm:block">Perubahan akan langsung terlihat di katalog store setelah simpan.</p>
                 <div className="flex items-center gap-2 ml-auto">
-                    <Link href="/products" className="inline-flex items-center justify-center bg-white text-[#1a1a1a] border border-[#e6e6e6] hover:border-[#1a1a1a] font-sans text-[11px] uppercase tracking-[0.12em] px-6 py-2.5 rounded transition-colors no-underline">
+                    <ButtonLink href="/products" variant="outline" size="lg">
                         Batal
-                    </Link>
-                    <Button type="submit" disabled={form.processing} className="px-6 py-2.5">
+                    </ButtonLink>
+                    <Button type="submit" disabled={form.processing} variant="primary" size="lg">
                         {form.processing ? 'Menyimpan...' : isEdit ? 'Simpan Perubahan' : 'Simpan Produk'}
                     </Button>
                 </div>

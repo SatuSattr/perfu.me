@@ -262,28 +262,20 @@ export default function ProductReviewsPage() {
                         />
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
-                        <button
-                            type="button"
+                        <Button
+                            variant="primary"
+                            size="lg"
                             onClick={() => {
-                                // Exclusive: close edit-mode if open
                                 setEditingId(null);
                                 setDraft(null);
-                                setNewDraft({
-                                    name: "",
-                                    rating: 5,
-                                    date: "",
-                                    message: "",
-                                });
+                                setNewDraft({ name: "", rating: 5, date: "", message: "" });
                                 setShowAdd(true);
                             }}
-                            className="inline-flex items-center gap-2 bg-[#1a1a1a] text-white hover:bg-[#333] border border-[#1a1a1a] font-sans text-[11px] uppercase tracking-[0.12em] px-5 py-2.5 rounded-full transition-colors duration-200 shrink-0"
                         >
                             <Plus size={14} strokeWidth={1.8} />
-                            <span className="hidden sm:inline">
-                                Tambah Ulasan
-                            </span>
+                            <span className="hidden sm:inline">Tambah Ulasan</span>
                             <span className="sm:hidden">Tambah</span>
-                        </button>
+                        </Button>
                         <CheckedCombobox
                             label="Filter Ulasan"
                             buttonLabel="Filter"
@@ -348,30 +340,23 @@ export default function ProductReviewsPage() {
                             className="w-px h-6 bg-[#e6e6e6] hidden sm:block"
                             aria-hidden="true"
                         />
-                        <button
-                            type="button"
+                        <Button
+                            variant="secondary"
+                            size="md"
                             onClick={() => toggleAll(!allSelected)}
-                            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-white border border-[#e6e6e6] text-[#555] hover:border-[#1a1a1a] hover:text-[#1a1a1a] font-sans text-[11px] uppercase tracking-[0.12em] transition-colors duration-200 whitespace-nowrap"
+                            className="whitespace-nowrap"
                         >
                             <Check size={12} strokeWidth={1.8} />
                             {allSelected ? "Uncheck all" : "Check all"}
-                        </button>
-                        <button
-                            type="button"
-                            onClick={onBulkDelete}
-                            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-red-500 border border-red-500 text-white hover:bg-red-600 font-sans text-[11px] uppercase tracking-[0.12em] transition-colors duration-200 whitespace-nowrap"
-                        >
+                        </Button>
+                        <Button variant="danger" size="md" onClick={onBulkDelete} className="whitespace-nowrap">
                             <Trash2 size={12} strokeWidth={1.8} />
                             Hapus
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => setSelected(new Set())}
-                            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-white border border-[#e6e6e6] text-[#666] hover:border-[#1a1a1a] hover:text-[#1a1a1a] font-sans text-[11px] uppercase tracking-[0.12em] transition-colors duration-200 whitespace-nowrap"
-                        >
+                        </Button>
+                        <Button variant="outline" size="md" onClick={() => setSelected(new Set())} className="whitespace-nowrap">
                             <X size={12} strokeWidth={1.8} />
                             Batal
-                        </button>
+                        </Button>
                     </div>
                 )}
 
@@ -537,44 +522,21 @@ export default function ProductReviewsPage() {
                                                         />
                                                     </div>
                                                     <div className="col-span-12 flex justify-end gap-1.5 mt-1">
-                                                        <button
-                                                            type="button"
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
                                                             onClick={() => {
-                                                                setShowAdd(
-                                                                    false,
-                                                                );
-                                                                setNewDraft({
-                                                                    name: "",
-                                                                    rating: 5,
-                                                                    date: "",
-                                                                    message: "",
-                                                                });
+                                                                setShowAdd(false);
+                                                                setNewDraft({ name: "", rating: 5, date: "", message: "" });
                                                             }}
-                                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-[#e6e6e6] text-[#666] hover:border-[#1a1a1a] font-sans text-[11px] transition-colors"
                                                         >
-                                                            <X
-                                                                size={12}
-                                                                strokeWidth={
-                                                                    1.8
-                                                                }
-                                                            />
+                                                            <X size={12} strokeWidth={1.8} />
                                                             Batal
-                                                        </button>
-                                                        <button
-                                                            type="button"
-                                                            onClick={
-                                                                handleAddSave
-                                                            }
-                                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#1a1a1a] text-white hover:bg-[#333] font-sans text-[11px] transition-colors"
-                                                        >
-                                                            <Check
-                                                                size={12}
-                                                                strokeWidth={
-                                                                    1.8
-                                                                }
-                                                            />
+                                                        </Button>
+                                                        <Button variant="primary" size="sm" onClick={handleAddSave}>
+                                                            <Check size={12} strokeWidth={1.8} />
                                                             Simpan
-                                                        </button>
+                                                        </Button>
                                                     </div>
                                                 </div>
                                             </div>
@@ -735,42 +697,14 @@ export default function ProductReviewsPage() {
                                                                     />
                                                                 </div>
                                                                 <div className="col-span-12 flex justify-end gap-1.5 mt-1">
-                                                                    <button
-                                                                        type="button"
-                                                                        onClick={
-                                                                            cancelEdit
-                                                                        }
-                                                                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-[#e6e6e6] text-[#666] hover:border-[#1a1a1a] font-sans text-[11px] transition-colors"
-                                                                    >
-                                                                        <X
-                                                                            size={
-                                                                                12
-                                                                            }
-                                                                            strokeWidth={
-                                                                                1.8
-                                                                            }
-                                                                        />
+                                                                    <Button variant="outline" size="sm" onClick={cancelEdit}>
+                                                                        <X size={12} strokeWidth={1.8} />
                                                                         Batal
-                                                                    </button>
-                                                                    <button
-                                                                        type="button"
-                                                                        onClick={() =>
-                                                                            handleSave(
-                                                                                row,
-                                                                            )
-                                                                        }
-                                                                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#1a1a1a] text-white hover:bg-[#333] font-sans text-[11px] transition-colors"
-                                                                    >
-                                                                        <Check
-                                                                            size={
-                                                                                12
-                                                                            }
-                                                                            strokeWidth={
-                                                                                1.8
-                                                                            }
-                                                                        />
+                                                                    </Button>
+                                                                    <Button variant="primary" size="sm" onClick={() => handleSave(row)}>
+                                                                        <Check size={12} strokeWidth={1.8} />
                                                                         Simpan
-                                                                    </button>
+                                                                    </Button>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -869,38 +803,23 @@ export default function ProductReviewsPage() {
                                                 </td>
                                                 <td className="px-4 py-3">
                                                     <div className="flex items-center justify-end gap-1.5">
-                                                        <button
-                                                            type="button"
-                                                            onClick={() =>
-                                                                startEdit(row)
-                                                            }
+                                                        <Button
+                                                            variant="secondary"
+                                                            size="icon"
+                                                            onClick={() => startEdit(row)}
                                                             aria-label="Edit ulasan"
-                                                            className="w-8 h-8 rounded-lg border border-[#e6e6e6] text-[#555] hover:border-[#1a1a1a] hover:text-[#1a1a1a] inline-flex items-center justify-center transition-colors duration-200"
                                                         >
-                                                            <Pencil
-                                                                size={14}
-                                                                strokeWidth={
-                                                                    1.5
-                                                                }
-                                                            />
-                                                        </button>
-                                                        <button
-                                                            type="button"
-                                                            onClick={() =>
-                                                                onDeleteSingle(
-                                                                    row.id,
-                                                                )
-                                                            }
+                                                            <Pencil size={14} strokeWidth={1.5} />
+                                                        </Button>
+                                                        <Button
+                                                            variant="outline"
+                                                            size="icon"
+                                                            onClick={() => onDeleteSingle(row.id)}
                                                             aria-label="Hapus ulasan"
-                                                            className="w-8 h-8 rounded-lg border border-[#e6e6e6] text-[#888] hover:border-red-400 hover:text-red-500 inline-flex items-center justify-center transition-colors duration-200"
+                                                            className="text-[#888] hover:border-red-400 hover:text-red-500"
                                                         >
-                                                            <Trash2
-                                                                size={14}
-                                                                strokeWidth={
-                                                                    1.5
-                                                                }
-                                                            />
-                                                        </button>
+                                                            <Trash2 size={14} strokeWidth={1.5} />
+                                                        </Button>
                                                     </div>
                                                 </td>
                                             </tr>
@@ -990,9 +909,8 @@ export default function ProductReviewsPage() {
                                     Batal
                                 </Button>
                                 <Button
-                                    variant="primary"
+                                    variant="danger"
                                     size="sm"
-                                    className="bg-red-500 hover:bg-red-600 border-red-500"
                                     onClick={() => {
                                         const id = confirmSingleId;
                                         router.delete(
@@ -1038,9 +956,8 @@ export default function ProductReviewsPage() {
                                     Batal
                                 </Button>
                                 <Button
-                                    variant="primary"
+                                    variant="danger"
                                     size="sm"
-                                    className="bg-red-500 hover:bg-red-600 border-red-500"
                                     onClick={() => {
                                         router.delete(
                                             `/products/${product.slug}/reviews`,

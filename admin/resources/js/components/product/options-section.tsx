@@ -1,5 +1,6 @@
 import { Plus, Tag } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 import { OptionCard, type OptionItem } from './option-card';
 
 interface Props {
@@ -51,14 +52,10 @@ export function OptionsSection({ options, onChange, type, className = '' }: Prop
                         <p className="font-sans text-[11px] text-amber-600 mt-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">Tipe signature biasanya tanpa varian — varian akan tetap disimpan.</p>
                     )}
                 </div>
-                <button
-                    type="button"
-                    onClick={addOption}
-                    className="inline-flex items-center gap-2 bg-[#1a1a1a] text-white hover:bg-[#333] border border-[#1a1a1a] font-sans text-[11px] uppercase tracking-[0.12em] px-4 py-2 rounded-full transition-colors duration-200 shrink-0"
-                >
+                <Button variant="primary" size="md" onClick={addOption}>
                     <Plus size={14} strokeWidth={1.8} />
                     Tambah Opsi
-                </button>
+                </Button>
             </div>
 
             {options.length === 0 ? (

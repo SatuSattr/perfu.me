@@ -1,6 +1,7 @@
 import { ImagePlus } from "lucide-react";
 import { useRef } from "react";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import { ImageCard } from "./image-card";
 
 export interface MediaItem {
@@ -81,15 +82,15 @@ export function MediaSection({
                         store
                     </p>
                 </div>
-                <button
-                    type="button"
+                <Button
+                    variant="primary"
+                    size="md"
                     onClick={() => inputRef.current?.click()}
                     disabled={images.length >= 6}
-                    className="inline-flex items-center gap-2 bg-[#1a1a1a] text-white border border-[#1a1a1a] hover:bg-[#333] font-sans text-[11px] uppercase tracking-[0.12em] px-4 py-2 rounded-full transition-colors duration-200 disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                     <ImagePlus size={14} strokeWidth={1.5} />
                     Tambah Foto
-                </button>
+                </Button>
                 <input
                     ref={inputRef}
                     type="file"

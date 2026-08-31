@@ -1,6 +1,7 @@
 import { ChevronDown, ChevronUp, X, Plus, GripVertical } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Combobox } from '@/components/form/combobox';
 import { ChoiceRow, type ChoiceItem } from './choice-row';
@@ -80,40 +81,18 @@ export function OptionCard({ option, index, total, onChange, onRemove, onMoveUp,
                 </div>
                 <div className="flex items-center gap-1 shrink-0 mt-6">
                     <span className="hidden sm:inline-flex font-sans text-[10px] text-[#aaa] mr-1">#{index + 1}</span>
-                    <button
-                        type="button"
-                        onClick={onMoveUp}
-                        disabled={index === 0}
-                        aria-label="Pindah ke atas"
-                        className="w-7 h-7 rounded-full bg-white border border-[#e6e6e6] text-[#555] hover:border-[#1a1a1a] inline-flex items-center justify-center transition-colors disabled:opacity-40"
-                    >
+                    <Button variant="secondary" size="icon-sm" onClick={onMoveUp} disabled={index === 0} aria-label="Pindah ke atas">
                         <ChevronUp size={12} strokeWidth={1.8} />
-                    </button>
-                    <button
-                        type="button"
-                        onClick={onMoveDown}
-                        disabled={index === total - 1}
-                        aria-label="Pindah ke bawah"
-                        className="w-7 h-7 rounded-full bg-white border border-[#e6e6e6] text-[#555] hover:border-[#1a1a1a] inline-flex items-center justify-center transition-colors disabled:opacity-40"
-                    >
+                    </Button>
+                    <Button variant="secondary" size="icon-sm" onClick={onMoveDown} disabled={index === total - 1} aria-label="Pindah ke bawah">
                         <ChevronDown size={12} strokeWidth={1.8} />
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => setCollapsed((v) => !v)}
-                        aria-label={collapsed ? 'Buka' : 'Tutup'}
-                        className="w-7 h-7 rounded-full bg-white border border-[#e6e6e6] text-[#555] hover:border-[#1a1a1a] inline-flex items-center justify-center transition-colors"
-                    >
+                    </Button>
+                    <Button variant="secondary" size="icon-sm" onClick={() => setCollapsed((v) => !v)} aria-label={collapsed ? 'Buka' : 'Tutup'}>
                         <ChevronDown size={12} strokeWidth={1.8} className={cn('transition-transform', collapsed && '-rotate-90')} />
-                    </button>
-                    <button
-                        type="button"
-                        onClick={onRemove}
-                        aria-label="Hapus opsi"
-                        className="w-7 h-7 rounded-full bg-white border border-[#e6e6e6] text-[#888] hover:border-red-400 hover:text-red-500 inline-flex items-center justify-center transition-colors"
-                    >
+                    </Button>
+                    <Button variant="outline" size="icon-sm" onClick={onRemove} aria-label="Hapus opsi" className="text-[#888] hover:border-red-400 hover:text-red-500">
                         <X size={12} strokeWidth={1.8} />
-                    </button>
+                    </Button>
                 </div>
             </div>
 
@@ -121,14 +100,10 @@ export function OptionCard({ option, index, total, onChange, onRemove, onMoveUp,
                 <div className="mt-4 border-t border-[#f5f5f5] pt-4">
                     <div className="flex items-center justify-between mb-3">
                         <span className="font-sans text-[10px] uppercase tracking-[0.12em] text-[#aaa]">Pilihan ({option.choices.length})</span>
-                        <button
-                            type="button"
-                            onClick={addChoice}
-                            className="inline-flex items-center gap-1.5 bg-white text-[#1a1a1a] border border-[#e6e6e6] hover:border-[#1a1a1a] font-sans text-[10px] uppercase tracking-[0.12em] px-3 py-1.5 rounded-full transition-colors"
-                        >
+                        <Button variant="secondary" size="sm" onClick={addChoice} className="text-[10px]">
                             <Plus size={12} strokeWidth={1.8} />
                             Tambah Pilihan
-                        </button>
+                        </Button>
                     </div>
 
                     {option.choices.length === 0 ? (

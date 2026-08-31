@@ -1,6 +1,7 @@
 import { Star, Pencil, Trash2, Check, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 import { Input, TextArea } from '@/components/ui/input';
 
 export interface ReviewItem {
@@ -73,25 +74,14 @@ export function ReviewCard({ review, onSave, onDelete, isEditing, onEditingChang
                         <TextArea label="Pesan" value={draft.message} onChange={(e) => setDraft({ ...draft, message: e.target.value })} rows={2} placeholder="Aromanya..." />
                     </div>
                     <div className="col-span-12 flex justify-end gap-1.5 mt-1">
-                        <button
-                            type="button"
-                            onClick={() => {
-                                setDraft(review);
-                                setEditing(false);
-                            }}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-[#e6e6e6] text-[#666] hover:border-[#1a1a1a] font-sans text-[11px] transition-colors"
-                        >
+                        <Button variant="outline" size="sm" onClick={() => { setDraft(review); setEditing(false); }}>
                             <X size={12} strokeWidth={1.8} />
                             Batal
-                        </button>
-                        <button
-                            type="button"
-                            onClick={handleSave}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#1a1a1a] text-white hover:bg-[#333] font-sans text-[11px] transition-colors"
-                        >
+                        </Button>
+                        <Button variant="primary" size="sm" onClick={handleSave}>
                             <Check size={12} strokeWidth={1.8} />
                             Simpan
-                        </button>
+                        </Button>
                     </div>
                 </div>
             </div>
@@ -125,28 +115,23 @@ export function ReviewCard({ review, onSave, onDelete, isEditing, onEditingChang
                 <p className="font-sans text-[12.5px] leading-[1.6] text-[#555] mt-1.5 break-words">{review.message || '—'}</p>
             </div>
             <div className="hidden group-hover:flex items-center justify-center gap-1.5 shrink-0 self-center">
-                <button
-                    type="button"
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        setEditing(true);
-                    }}
+                <Button
+                    variant="secondary"
+                    size="icon-sm"
+                    onClick={(e) => { e.stopPropagation(); setEditing(true); }}
                     aria-label="Edit ulasan"
-                    className="w-7 h-7 rounded-full bg-white border border-[#e6e6e6] text-[#555] hover:border-[#1a1a1a] hover:text-[#1a1a1a] inline-flex items-center justify-center transition-colors"
                 >
                     <Pencil size={12} strokeWidth={1.5} />
-                </button>
-                <button
-                    type="button"
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        onDelete();
-                    }}
+                </Button>
+                <Button
+                    variant="outline"
+                    size="icon-sm"
+                    onClick={(e) => { e.stopPropagation(); onDelete(); }}
                     aria-label="Hapus ulasan"
-                    className="w-7 h-7 rounded-full bg-white border border-[#e6e6e6] text-[#888] hover:border-red-400 hover:text-red-500 inline-flex items-center justify-center transition-colors"
+                    className="text-[#888] hover:border-red-400 hover:text-red-500"
                 >
                     <Trash2 size={12} strokeWidth={1.5} />
-                </button>
+                </Button>
             </div>
         </div>
     );

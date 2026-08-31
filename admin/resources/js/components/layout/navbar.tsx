@@ -149,7 +149,7 @@ export function Navbar({ className = "" }: { className?: string }) {
                                     type="button"
                                     role="menuitem"
                                     onClick={() => router.post("/logout")}
-                                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg font-sans text-[12px] text-[#666] hover:text-[#1a1a1a] hover:bg-[#f5f5f5] transition-colors duration-200 text-left"
+                                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-full font-sans text-[12px] text-[#666] hover:text-[#1a1a1a] hover:bg-[#f5f5f5] transition-colors duration-200 text-left"
                                 >
                                     <LogOut
                                         size={14}

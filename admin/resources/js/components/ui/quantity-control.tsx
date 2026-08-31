@@ -20,8 +20,8 @@ export function QuantityControl({ value, onDecrease, onIncrease, size = 'default
         'flex items-center justify-center cursor-pointer transition-colors duration-200 outline-none focus-visible:ring-2 focus-visible:ring-[#111] focus-visible:ring-offset-1';
     const btnClass =
         size === 'sm'
-            ? `${btnBase} bg-none border rounded p-[3px] ${hasError ? 'border-red-400 text-red-500 hover:border-red-500 hover:text-red-600' : 'border-black/10 text-[#888] hover:border-[#111] hover:text-[#111]'} ${disabled ? 'opacity-40 cursor-not-allowed hover:border-black/10 hover:text-[#888]' : ''}`
-            : `${btnBase} w-9 h-9 rounded-lg border ${hasError ? 'border-red-400 text-red-500 hover:border-red-500' : 'border-[#e6e6e6] text-[#555] hover:border-[#1a1a1a]'} ${disabled ? 'opacity-40 cursor-not-allowed hover:border-[#e6e6e6]' : ''}`;
+            ? `${btnBase} bg-none border rounded-full p-[3px] ${hasError ? 'border-red-400 text-red-500 hover:border-red-500 hover:text-red-600' : 'border-black/10 text-[#888] hover:border-[#111] hover:text-[#111]'} ${disabled ? 'opacity-40 cursor-not-allowed hover:border-black/10 hover:text-[#888]' : ''}`
+            : `${btnBase} w-9 h-9 rounded-full border ${hasError ? 'border-red-400 text-red-500 hover:border-red-500' : 'border-[#e6e6e6] text-[#555] hover:border-[#1a1a1a]'} ${disabled ? 'opacity-40 cursor-not-allowed hover:border-[#e6e6e6]' : ''}`;
 
     return (
         <div className={`flex flex-col gap-1 ${className}`}>

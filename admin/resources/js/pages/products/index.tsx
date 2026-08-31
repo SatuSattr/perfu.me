@@ -2,7 +2,7 @@ import { Head, Link, router, usePage } from "@inertiajs/react";
 import { Trash2, Pencil, Plus, Eye } from "lucide-react";
 import { useState } from "react";
 import { AppLayout } from "@/layouts/app-layout";
-import { Button } from "@/components/ui/button";
+import { Button, ButtonLink } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { SearchBar } from "@/components/ui/search-bar";
 import { CheckedCombobox } from "@/components/ui/checked-combobox";
@@ -153,16 +153,11 @@ export default function ProductsIndex() {
                             placeholder="Cari atribut..."
                             className="shrink-0"
                         />
-                        <Link
-                            href="/products/create"
-                            className="inline-flex items-center justify-center gap-2 bg-[#1a1a1a] text-white hover:bg-[#333] border border-[#1a1a1a] font-sans text-[11px] uppercase tracking-[0.12em] px-5 py-2.5 rounded-full transition-colors duration-200 no-underline shrink-0"
-                        >
+                        <ButtonLink href="/products/create" variant="primary" size="lg" className="no-underline">
                             <Plus size={14} strokeWidth={1.8} />
-                            <span className="hidden sm:inline">
-                                Tambah Produk
-                            </span>
+                            <span className="hidden sm:inline">Tambah Produk</span>
                             <span className="sm:hidden">Tambah</span>
-                        </Link>
+                        </ButtonLink>
                     </div>
                 </div>
 
@@ -290,41 +285,31 @@ export default function ProductsIndex() {
                                             </td>
                                             <td className="px-4 py-3">
                                                 <div className="flex items-center justify-end gap-1.5">
-                                                    <Link
+                                                    <ButtonLink
                                                         href={`/products/${row.slug}/reviews`}
-                                                        className="w-8 h-8 rounded-lg border border-[#e6e6e6] text-[#555] hover:border-[#1a1a1a] hover:text-[#1a1a1a] inline-flex items-center justify-center transition-colors duration-200"
+                                                        variant="secondary"
+                                                        size="icon"
                                                         aria-label={`View ulasan ${row.name}`}
                                                     >
-                                                        <Eye
-                                                            size={14}
-                                                            strokeWidth={1.5}
-                                                        />
-                                                    </Link>
-                                                    <Link
+                                                        <Eye size={14} strokeWidth={1.5} />
+                                                    </ButtonLink>
+                                                    <ButtonLink
                                                         href={`/products/${row.slug}/edit`}
-                                                        className="w-8 h-8 rounded-lg border border-[#e6e6e6] text-[#555] hover:border-[#1a1a1a] hover:text-[#1a1a1a] inline-flex items-center justify-center transition-colors duration-200"
+                                                        variant="secondary"
+                                                        size="icon"
                                                         aria-label={`Edit ${row.name}`}
                                                     >
-                                                        <Pencil
-                                                            size={14}
-                                                            strokeWidth={1.5}
-                                                        />
-                                                    </Link>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() =>
-                                                            setConfirmSlug(
-                                                                row.slug,
-                                                            )
-                                                        }
-                                                        className="w-8 h-8 rounded-lg border border-[#e6e6e6] text-[#888] hover:border-red-400 hover:text-red-500 inline-flex items-center justify-center transition-colors duration-200"
+                                                        <Pencil size={14} strokeWidth={1.5} />
+                                                    </ButtonLink>
+                                                    <Button
+                                                        variant="outline"
+                                                        size="icon"
+                                                        onClick={() => setConfirmSlug(row.slug)}
                                                         aria-label={`Hapus ${row.name}`}
+                                                        className="text-[#888] hover:border-red-400 hover:text-red-500"
                                                     >
-                                                        <Trash2
-                                                            size={14}
-                                                            strokeWidth={1.5}
-                                                        />
-                                                    </button>
+                                                        <Trash2 size={14} strokeWidth={1.5} />
+                                                    </Button>
                                                 </div>
                                             </td>
                                         </tr>
@@ -412,9 +397,8 @@ export default function ProductsIndex() {
                                     Batal
                                 </Button>
                                 <Button
-                                    variant="primary"
+                                    variant="danger"
                                     size="sm"
-                                    className="bg-red-500 hover:bg-red-600 border-red-500"
                                     onClick={() => {
                                         router.delete(
                                             `/products/${confirmSlug}`,
