@@ -139,7 +139,7 @@ export function ReviewPage() {
                   <p className="font-sans text-[13px] font-medium text-[#111]">{address.fullName} · {address.phone}</p>
                   <p className="font-sans text-[12px] text-[#666] leading-relaxed">
                     {address.street}{address.detail ? `, ${address.detail}` : ''}<br />
-                    {address.village ? address.village + ', ' : ''}{address.district ? address.district + ', ' : ''}{address.city_name || address.city}{address.province_name ? `, ${address.province_name}` : ''}{address.postalCode ? ` ${address.postalCode}` : ''}
+                    {(address.village_name || address.village) ? `${address.village_name || address.village}, ` : ''}{(address.district_name || address.district) ? `${address.district_name || address.district}, ` : ''}{address.city_name || address.city}{address.province_name ? `, ${address.province_name}` : ''}{address.postalCode ? ` ${address.postalCode}` : ''}
                   </p>
                   {address.email && <p className="font-sans text-[11px] text-[#888]">{address.email}</p>}
                 </div>

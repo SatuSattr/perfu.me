@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, MapPin, MapPin as MapPinFilled } from 'lucide-react';
 import { CheckoutStepper } from '../components/layout/CheckoutStepper';
@@ -6,23 +6,14 @@ import { Input, TextArea } from '../components/ui/Input';
 import { Combobox } from '../components/form/Combobox';
 import { useToast } from '../context/ToastContext';
 
-const provinsiData = [
-  { code: '11', name: 'Aceh' }, { code: '12', name: 'Sumatera Utara' }, { code: '13', name: 'Sumatera Barat' }, { code: '14', name: 'Riau' }, { code: '15', name: 'Jambi' },
-  { code: '16', name: 'Sumatera Selatan' }, { code: '17', name: 'Bengkulu' }, { code: '18', name: 'Lampung' }, { code: '19', name: 'Kep. Bangka Belitung' }, { code: '21', name: 'Kep. Riau' },
-  { code: '31', name: 'DKI Jakarta' }, { code: '32', name: 'Jawa Barat' }, { code: '33', name: 'Jawa Tengah' }, { code: '34', name: 'DI Yogyakarta' }, { code: '35', name: 'Jawa Timur' },
-  { code: '36', name: 'Banten' }, { code: '51', name: 'Bali' }, { code: '52', name: 'Nusa Tenggara Barat' }, { code: '53', name: 'Nusa Tenggara Timur' },
-  { code: '61', name: 'Kalimantan Barat' }, { code: '62', name: 'Kalimantan Tengah' }, { code: '63', name: 'Kalimantan Selatan' }, { code: '64', name: 'Kalimantan Timur' }, { code: '65', name: 'Kalimantan Utara' },
-  { code: '71', name: 'Sulawesi Utara' }, { code: '72', name: 'Sulawesi Tengah' }, { code: '73', name: 'Sulawesi Selatan' }, { code: '74', name: 'Sulawesi Tenggara' }, { code: '75', name: 'Gorontalo' }, { code: '76', name: 'Sulawesi Barat' },
-  { code: '81', name: 'Maluku' }, { code: '82', name: 'Maluku Utara' }, { code: '91', name: 'Papua Barat' }, { code: '94', name: 'Papua' },
-];
-const kotaByProvinsi = {
-  '31': [ { code: '3171', name: 'Kota Jakarta Selatan' }, { code: '3172', name: 'Kota Jakarta Timur' }, { code: '3173', name: 'Kota Jakarta Pusat' }, { code: '3174', name: 'Kota Jakarta Barat' }, { code: '3175', name: 'Kota Jakarta Utara' }, ],
-  '32': [ { code: '3201', name: 'Kab. Bogor' }, { code: '3202', name: 'Kab. Sukabumi' }, { code: '3203', name: 'Kab. Cianjur' }, { code: '3271', name: 'Kota Bogor' }, { code: '3273', name: 'Kota Bandung' }, { code: '3276', name: 'Kota Depok' }, { code: '3277', name: 'Kota Bekasi' }, ],
-  '33': [ { code: '3301', name: 'Kab. Cilacap' }, { code: '3302', name: 'Kab. Banyumas' }, { code: '3374', name: 'Kota Semarang' }, { code: '3375', name: 'Kota Salatiga' }, ],
-  '35': [ { code: '3501', name: 'Kab. Pacitan' }, { code: '3578', name: 'Kota Surabaya' }, { code: '3573', name: 'Kota Malang' }, ],
-  '36': [ { code: '3601', name: 'Kab. Pandeglang' }, { code: '3671', name: 'Kota Tangerang' }, { code: '3674', name: 'Kota Tangerang Selatan' }, ],
-  '51': [ { code: '5101', name: 'Kab. Jembrana' }, { code: '5171', name: 'Kota Denpasar' }, ],
-};
+const API_BASE = 'https://wilayah.id/api';
+
+async function fetchWilayah(path, signal) {
+  const res = await fetch(`${API_BASE}${path}`, { signal });
+  if (!res.ok) throw new Error(`Failed ${path}: ${res.status}`);
+  const json = await res.json();
+  return json.data || [];
+}
 
 export function AddressPage() {
   const { toast } = useToast();
@@ -31,12 +22,72 @@ export function AddressPage() {
   const [form, setForm] = useState({ fullName:'', phone:'', email:'', province:'', city:'', district:'', village:'', postalCode:'', street:'', detail:'' });
   const [provinceObj, setProvinceObj] = useState(null);
   const [cityObj, setCityObj] = useState(null);
+  const [districtObj, setDistrictObj] = useState(null);
+  const [villageObj, setVillageObj] = useState(null);
   const [errors, setErrors] = useState({});
   const [mapPin, setMapPin] = useState(null);
   const [locating, setLocating] = useState(false);
   const [showErrorBanner, setShowErrorBanner] = useState(false);
 
-  const kotaOptions = useMemo(() => provinceObj ? (kotaByProvinsi[provinceObj.code] || []) : [], [provinceObj]);
+  const [provinces, setProvinces] = useState([]);
+  const [regencies, setRegencies] = useState([]);
+  const [districts, setDistricts] = useState([]);
+  const [villages, setVillages] = useState([]);
+
+  const [loadingProvinces, setLoadingProvinces] = useState(false);
+  const [loadingRegencies, setLoadingRegencies] = useState(false);
+  const [loadingDistricts, setLoadingDistricts] = useState(false);
+  const [loadingVillages, setLoadingVillages] = useState(false);
+
+  // Fetch provinces on mount
+  useEffect(() => {
+    const ctrl = new AbortController();
+    setLoadingProvinces(true);
+    fetchWilayah('/provinces.json', ctrl.signal)
+      .then(setProvinces)
+      .catch((e) => { if (e.name !== 'AbortError') toast.error('Gagal memuat provinsi'); })
+      .finally(() => setLoadingProvinces(false));
+    return () => ctrl.abort();
+  }, []);
+
+  // Fetch regencies when province changes
+  useEffect(() => {
+    if (!provinceObj?.code) { setRegencies([]); return; }
+    const ctrl = new AbortController();
+    setLoadingRegencies(true);
+    setRegencies([]);
+    fetchWilayah(`/regencies/${provinceObj.code}.json`, ctrl.signal)
+      .then(setRegencies)
+      .catch((e) => { if (e.name !== 'AbortError') toast.error('Gagal memuat kota/kabupaten'); })
+      .finally(() => setLoadingRegencies(false));
+    return () => ctrl.abort();
+  }, [provinceObj?.code]);
+
+  // Fetch districts when city changes
+  useEffect(() => {
+    if (!cityObj?.code) { setDistricts([]); return; }
+    const ctrl = new AbortController();
+    setLoadingDistricts(true);
+    setDistricts([]);
+    fetchWilayah(`/districts/${cityObj.code}.json`, ctrl.signal)
+      .then(setDistricts)
+      .catch((e) => { if (e.name !== 'AbortError') toast.error('Gagal memuat kecamatan'); })
+      .finally(() => setLoadingDistricts(false));
+    return () => ctrl.abort();
+  }, [cityObj?.code]);
+
+  // Fetch villages when district changes
+  useEffect(() => {
+    if (!districtObj?.code) { setVillages([]); return; }
+    const ctrl = new AbortController();
+    setLoadingVillages(true);
+    setVillages([]);
+    fetchWilayah(`/villages/${districtObj.code}.json`, ctrl.signal)
+      .then(setVillages)
+      .catch((e) => { if (e.name !== 'AbortError') toast.error('Gagal memuat kelurahan/desa'); })
+      .finally(() => setLoadingVillages(false));
+    return () => ctrl.abort();
+  }, [districtObj?.code]);
 
   function validate() {
     const e={};
@@ -44,7 +95,11 @@ export function AddressPage() {
     if (!form.phone || !/^0[0-9]{7,14}$/.test(form.phone.trim())) e.phone='Nomor HP tidak valid.';
     if (!form.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) e.email='Email tidak valid.';
     if (!form.province) e.province='Pilih provinsi.';
-    if (!form.city) e.city='Pilih kota.';
+    if (!form.city) e.city='Pilih kota/kabupaten.';
+    if (!form.district) e.district='Pilih kecamatan.';
+    if (!form.village) e.village='Pilih kelurahan/desa.';
+    if (!form.postalCode) e.postalCode='Kode pos wajib diisi.';
+    else if (!/^[0-9]{5}$/.test(form.postalCode.trim())) e.postalCode='Kode pos harus 5 digit angka.';
     if (!form.street || form.street.trim().length <5) e.street='Alamat minimal 5 karakter.';
     setErrors(e);
     return Object.keys(e).length===0;
@@ -56,11 +111,30 @@ export function AddressPage() {
     navigator.geolocation.getCurrentPosition((pos)=> { setMapPin({ lat:pos.coords.latitude, lng:pos.coords.longitude }); setLocating(false); toast.success('Lokasi ditemukan'); }, ()=> { setLocating(false); toast.error('Gagal mendapatkan lokasi'); });
   }
 
+  function handlePostalCodeChange(e) {
+    // hanya angka, tanpa minus, koma, huruf
+    const digits = e.target.value.replace(/\D/g, '').slice(0, 5);
+    setForm({...form, postalCode: digits});
+  }
+
+  function handlePostalCodeKeyDown(e) {
+    // cegah karakter tidak diinginkan langsung di keyboard
+    if (['-', '+', ',', '.', 'e', 'E'].includes(e.key)) e.preventDefault();
+  }
+
   function submit(e){
     e.preventDefault();
     if(!validate()) { setShowErrorBanner(true); return; }
     setShowErrorBanner(false);
-    const payload = { ...form, province_name: provinceObj?.name || '', city_name: cityObj?.name || '', lat: mapPin?.lat || null, lng: mapPin?.lng || null };
+    const payload = {
+      ...form,
+      province_name: provinceObj?.name || '',
+      city_name: cityObj?.name || '',
+      district_name: districtObj?.name || '',
+      village_name: villageObj?.name || '',
+      lat: mapPin?.lat || null,
+      lng: mapPin?.lng || null
+    };
     localStorage.setItem('perfu.me:address', JSON.stringify(payload));
     toast.success('Alamat tersimpan! Melanjutkan ke review...');
     navigate('/cart/review');
@@ -91,24 +165,64 @@ export function AddressPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
               <Combobox
                 label="Provinsi"
-                placeholder="Pilih provinsi"
+                placeholder={loadingProvinces ? 'Memuat...' : 'Pilih provinsi'}
                 value={provinceObj}
-                onSelect={(p)=> { setProvinceObj(p); setForm({...form, province:p.code, city:'', district:'', village:''}); setCityObj(null); }}
-                options={provinsiData}
+                onSelect={(p)=> {
+                  setProvinceObj(p);
+                  setCityObj(null); setDistrictObj(null); setVillageObj(null);
+                  setForm({...form, province:p.code, city:'', district:'', village:''});
+                }}
+                options={provinces}
                 error={errors.province}
+                disabled={loadingProvinces}
               />
               <Combobox
                 label="Kota / Kabupaten"
-                placeholder={form.province ? 'Pilih kota' : 'Pilih provinsi dulu'}
+                placeholder={!form.province ? 'Pilih provinsi dulu' : loadingRegencies ? 'Memuat...' : 'Pilih kota'}
                 value={cityObj}
-                onSelect={(k)=> { setCityObj(k); setForm({...form, city:k.code}); }}
-                options={kotaOptions}
+                onSelect={(k)=> {
+                  setCityObj(k);
+                  setDistrictObj(null); setVillageObj(null);
+                  setForm({...form, city:k.code, district:'', village:''});
+                }}
+                options={regencies}
                 error={errors.city}
-                disabled={!form.province}
+                disabled={!form.province || loadingRegencies}
               />
-              <Input label="Kecamatan" placeholder={form.city ? 'Pilih kecamatan' : 'Pilih kota dulu'} disabled={!form.city} value={form.district} onChange={(e)=> setForm({...form, district:e.target.value})} error={errors.district} />
-              <Input label="Kelurahan / Desa" placeholder={form.district ? 'Pilih kelurahan' : 'Pilih kecamatan dulu'} disabled={!form.district} value={form.village} onChange={(e)=> setForm({...form, village:e.target.value})} error={errors.village} />
-              <Input label="Kode Pos" placeholder="12345" value={form.postalCode} onChange={(e)=> setForm({...form, postalCode:e.target.value})} error={errors.postalCode} maxLength={10} inputMode="numeric" />
+              <Combobox
+                label="Kecamatan"
+                placeholder={!form.city ? 'Pilih kota dulu' : loadingDistricts ? 'Memuat...' : 'Pilih kecamatan'}
+                value={districtObj}
+                onSelect={(d)=> {
+                  setDistrictObj(d);
+                  setVillageObj(null);
+                  setForm({...form, district:d.code, village:''});
+                }}
+                options={districts}
+                error={errors.district}
+                disabled={!form.city || loadingDistricts}
+              />
+              <Combobox
+                label="Kelurahan / Desa"
+                placeholder={!form.district ? 'Pilih kecamatan dulu' : loadingVillages ? 'Memuat...' : 'Pilih kelurahan'}
+                value={villageObj}
+                onSelect={(v)=> { setVillageObj(v); setForm({...form, village:v.code}); }}
+                options={villages}
+                error={errors.village}
+                disabled={!form.district || loadingVillages}
+              />
+              <Input
+                label="Kode Pos"
+                placeholder="12345"
+                value={form.postalCode}
+                onChange={handlePostalCodeChange}
+                onKeyDown={handlePostalCodeKeyDown}
+                error={errors.postalCode}
+                maxLength={5}
+                inputMode="numeric"
+                pattern="[0-9]*"
+                type="text"
+              />
             </div>
 
             <Input label="Alamat Lengkap" placeholder="Nama jalan, nomor rumah, RT/RW" value={form.street} onChange={(e)=> setForm({...form, street:e.target.value})} error={errors.street} maxLength={255} />
