@@ -1,4 +1,12 @@
-import { Package, Gift, Star, Tag, TrendingUp, Truck, MapPin } from 'lucide-react';
+import {
+  Package,
+  Gift,
+  Star,
+  Tag,
+  TrendingUp,
+  Truck,
+  MapPin,
+} from "lucide-react";
 import { products, testimonials, badges } from "../data/products";
 import { ProductCard } from "../components/product/ProductCard";
 import { StarRating } from "../components/product/StarRating";
@@ -9,9 +17,9 @@ const lucideIconMap = {
   gift: Gift,
   star: Star,
   tag: Tag,
-  'trending-up': TrendingUp,
+  "trending-up": TrendingUp,
   truck: Truck,
-  'map-pin': MapPin,
+  "map-pin": MapPin,
 };
 
 function BadgeIcon({ name }) {
@@ -30,7 +38,7 @@ export function HomePage() {
   return (
     <div className="pt-[16px]">
       <div className="mx-4">
-        <section className="relative max-w-7xl px-4 mx-auto mt-[100px] h-72 flex items-center overflow-hidden rounded-2xl">
+        <section className="relative max-w-7xl lg:px-4 mx-auto mt-[100px] h-72 flex items-center overflow-hidden rounded-2xl">
           <img
             src="/assets/hero-brand.png"
             alt="Perfu.me brand"
@@ -143,7 +151,7 @@ export function HomePage() {
         </div>
       </section>
 
-      <section className="mt-16 mx-4 overflow-hidden">
+      <section className="mt-16 overflow-hidden">
         <div className="max-w-7xl mx-auto mb-10">
           <span className="font-sans text-[9px] uppercase tracking-[0.2em] text-[#aaa]">
             Testimoni

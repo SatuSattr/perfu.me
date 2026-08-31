@@ -39,8 +39,9 @@ class HandleInertiaRequests extends Middleware
             ...parent::share($request),
             'name' => config('app.name'),
             'auth' => [
-                'user' => $request->user(),
+                'admin' => $request->user('admin'),
             ],
+            'ip' => $request->ip(),
         ];
     }
 }

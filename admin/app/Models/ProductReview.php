@@ -80,6 +80,7 @@ class ProductReview extends Model
     public function toStorePayload(): array
     {
         return [
+            'id' => $this->id,
             'name' => $this->name,
             'rating' => $this->rating,
             'date' => $this->formattedDate() ?? $this->created_at?->format('d M Y'),

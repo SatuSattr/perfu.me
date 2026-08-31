@@ -1,6 +1,11 @@
-export function Input({ label, error, id, className='', ...props }) {
+import { useState } from 'react';
+import { Search, Eye, EyeOff } from 'lucide-react';
+
+export function Input({ label, error, id, className='', type, ...props }) {
   const inputId = id || (label ? `input-${label.replace(/\s+/g,'-').toLowerCase()}` : undefined);
   const errorId = error && inputId ? `${inputId}-error` : undefined;
+  const isPassword = type === 'password';
+  const [showPassword, setShowPassword] = useState(false);
   return (
     <div className="flex flex-col">
       {label && (
@@ -8,13 +13,27 @@ export function Input({ label, error, id, className='', ...props }) {
           {label}
         </label>
       )}
-      <input
-        id={inputId}
-        aria-invalid={!!error}
-        aria-describedby={errorId}
-        className={`w-full border rounded-lg px-4 py-3 text-[13px] font-sans text-[#111] outline-none transition-colors duration-200 bg-white placeholder:text-[#bbb] ${error ? 'border-red-400 focus:border-red-400' : 'border-gray-200 focus:border-[#111]'} ${className}`}
-        {...props}
-      />
+      <div className="relative">
+        <input
+          id={inputId}
+          type={isPassword ? (showPassword ? 'text' : 'password') : type}
+          aria-invalid={!!error}
+          aria-describedby={errorId}
+          className={`w-full border rounded-lg px-4 py-3 text-[13px] font-sans text-[#111] outline-none transition-colors duration-200 bg-white placeholder:text-[#bbb] ${error ? 'border-red-400 focus:border-red-400' : 'border-gray-200 focus:border-[#111]'} ${isPassword ? 'pr-10' : ''} ${className}`}
+          {...props}
+        />
+        {isPassword && (
+          <button
+            type="button"
+            onClick={() => setShowPassword((v) => !v)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-[#aaa] hover:text-[#111] transition-colors duration-200 p-0.5"
+            aria-label={showPassword ? 'Sembunyikan password' : 'Lihat password'}
+            tabIndex={-1}
+          >
+            {showPassword ? <EyeOff size={16} strokeWidth={1.8} /> : <Eye size={16} strokeWidth={1.8} />}
+          </button>
+        )}
+      </div>
       {error && <span id={errorId} className="mt-1.5 font-sans text-[11px] text-red-500" role="alert">{error}</span>}
     </div>
   );
@@ -31,8 +50,6 @@ export function TextArea({ label, error, id, className='', ...props }) {
     </div>
   );
 }
-
-import { Search } from 'lucide-react';
 
 export function SearchInput({ value, onChange, placeholder='Cari produk...', error, id, ...props }) {
   const inputId = id || 'search-input';
