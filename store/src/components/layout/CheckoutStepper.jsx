@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { Check } from 'lucide-react';
 
 export function CheckoutStepper({ step = 1 }) {
-  // step 1: cart, 2: alamat, 3: pembayaran
+  // step 1: cart, 2: alamat, 3: review
   const circle = (active, completed) => {
     if (completed) return 'bg-[#111] text-white';
     if (active) return 'bg-[#111] text-white';
@@ -35,7 +35,7 @@ export function CheckoutStepper({ step = 1 }) {
 
       <div className="flex flex-col items-center gap-[6px]">
         <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold font-sans transition-all duration-200 ${step===3 ? circle(true,false) : circle(false,false)}`}>3</div>
-        <span className={`font-sans text-[10px] font-medium tracking-[0.08em] uppercase ${labelClass(step===3,false)}`}>Pembayaran</span>
+        <span className={`font-sans text-[10px] font-medium tracking-[0.08em] uppercase ${labelClass(step===3,false)}`}>Review</span>
       </div>
     </div>
   );

@@ -2,10 +2,8 @@ import { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, MapPin, MapPin as MapPinFilled } from 'lucide-react';
 import { CheckoutStepper } from '../components/layout/CheckoutStepper';
-import { OrderSummary } from '../components/cart/OrderSummary';
 import { Input, TextArea } from '../components/ui/Input';
 import { Combobox } from '../components/form/Combobox';
-import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
 
 const provinsiData = [
@@ -27,7 +25,6 @@ const kotaByProvinsi = {
 };
 
 export function AddressPage() {
-  const { cart, subtotal } = useCart();
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -65,14 +62,14 @@ export function AddressPage() {
     setShowErrorBanner(false);
     const payload = { ...form, province_name: provinceObj?.name || '', city_name: cityObj?.name || '', lat: mapPin?.lat || null, lng: mapPin?.lng || null };
     localStorage.setItem('perfu.me:address', JSON.stringify(payload));
-    toast.success('Alamat tersimpan! Melanjutkan ke pembayaran...');
-    // navigate to payment (placeholder)
+    toast.success('Alamat tersimpan! Melanjutkan ke review...');
+    navigate('/cart/review');
   }
 
   return (
     <main className="pt-[100px] max-w-[80rem] mx-auto px-8 pb-16">
       <CheckoutStepper step={2} />
-      <div className="flex flex-col lg:flex-row gap-8 lg:gap-12">
+      <div className="max-w-3xl mx-auto w-full">
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-4 mb-6">
             <h2 className="text-[11px] font-medium tracking-[0.18em] uppercase text-[#888] font-sans">Alamat Pengiriman</h2>
@@ -142,12 +139,8 @@ export function AddressPage() {
               <p className="font-sans text-[11px] leading-relaxed text-[#888]">Tidak perlu terlalu akurat. Cukup letakkan pin di sekitar lokasi pengiriman; pin ini opsional dan dapat dilewati.</p>
             </div>
 
-            <button type="submit" className="w-full px-6 py-3 bg-[#111] text-white text-[11px] font-medium uppercase tracking-[0.12em] rounded font-sans cursor-pointer border-none hover:bg-[#333] transition-colors duration-200">Lanjut ke Pembayaran</button>
+            <button type="submit" className="w-full px-6 py-3 bg-[#111] text-white text-[11px] font-medium uppercase tracking-[0.12em] rounded font-sans cursor-pointer border-none hover:bg-[#333] transition-colors duration-200">Lanjut ke Review</button>
           </form>
-        </div>
-
-        <div className="w-full lg:w-[340px] shrink-0 lg:sticky lg:top-[100px] self-start">
-          <OrderSummary subtotal={subtotal} items={cart} />
         </div>
       </div>
     </main>
