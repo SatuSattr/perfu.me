@@ -141,8 +141,18 @@ class ProductController extends Controller
         return redirect()->route('products.index')->with('success', 'Produk dihapus.');
     }
 
-    public function reviewsPage(Request $request, Product $product): Response
+    public function reviewsPage(Request $request, Product $product, ?ProductReview $review = null): Response
     {
+        // Resolve deep-link sidebar state from URL: /reviews/create or /reviews/{id}/edit
+        $initialReviewId = null;
+        $initialIsCreate = false;
+        $path = $request->path();
+        if (str_ends_with($path, '/reviews/create')) {
+            $initialIsCreate = true;
+        } elseif ($review && $review->exists && $review->product_id === $product->id) {
+            $initialReviewId = $review->id;
+        }
+
         $query = $product->reviews();
 
         if ($q = $request->string('q')->toString()) {
@@ -206,6 +216,8 @@ class ProductController extends Controller
                 'sort' => $sort ?: 'latest',
                 'per_page' => $perPage,
             ],
+            'initialEditingReviewId' => $initialReviewId,
+            'initialIsCreate' => $initialIsCreate,
         ]);
     }
 

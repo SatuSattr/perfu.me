@@ -1,5 +1,5 @@
 import { Head, Link, router, usePage } from "@inertiajs/react";
-import { Trash2, Pencil, Plus, Eye } from "lucide-react";
+import { Trash2, Pencil, Plus, Star } from "lucide-react";
 import { useState } from "react";
 import { AppLayout } from "@/layouts/app-layout";
 import { Button, ButtonLink } from "@/components/ui/button";
@@ -289,9 +289,9 @@ export default function ProductsIndex() {
                                                         href={`/products/${row.slug}/reviews`}
                                                         variant="secondary"
                                                         size="icon"
-                                                        aria-label={`View ulasan ${row.name}`}
+                                                        aria-label={`Ulasan ${row.name}`}
                                                     >
-                                                        <Eye size={14} strokeWidth={1.5} />
+                                                        <Star size={14} strokeWidth={1.5} />
                                                     </ButtonLink>
                                                     <ButtonLink
                                                         href={`/products/${row.slug}/edit`}

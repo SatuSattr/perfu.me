@@ -46,12 +46,14 @@ export function Button({
     color,
     outline,
     hover,
+    type = 'button',
     className,
     children,
     ...props
 }: ButtonProps) {
     return (
         <button
+            type={type}
             className={cn(base, variants[variant], sizes[size], background, color, outline, hover, className)}
             {...props}
         >

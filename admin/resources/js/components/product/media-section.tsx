@@ -111,12 +111,13 @@ export function MediaSection({
                     </p>
                 </div>
             ) : (
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
                     {images.map((img, idx) => (
                         <ImageCard
                             key={`${img.path}-${idx}`}
                             src={img.preview ?? img.path}
                             isPrimary={idx === 0}
+                            isDetail={idx === 1}
                             position={idx}
                             canUp={idx > 0}
                             canDown={idx < images.length - 1}
@@ -126,16 +127,6 @@ export function MediaSection({
                         />
                     ))}
                 </div>
-            )}
-
-            {images[1] && (
-                <p className="font-sans text-[11px] text-[#888] mt-3">
-                    Foto ke-2 otomatis jadi{" "}
-                    <span className="text-[#1a1a1a] font-medium">
-                        detail image
-                    </span>{" "}
-                    di store.
-                </p>
             )}
 
             {error && (

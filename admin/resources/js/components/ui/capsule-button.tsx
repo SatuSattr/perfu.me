@@ -44,12 +44,14 @@ export function CapsuleButton({
     hover,
     fontSize,
     tracking,
+    type = 'button',
     className,
     children,
     ...props
 }: CapsuleButtonProps) {
     return (
         <button
+            type={type}
             className={cn(
                 base,
                 variants[variant],
