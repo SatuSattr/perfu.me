@@ -16,7 +16,7 @@ return [
 
     'paths' => ['api/*'],
 
-    'allowed_methods' => ['GET', 'HEAD', 'OPTIONS'],
+    'allowed_methods' => ['GET', 'HEAD', 'OPTIONS', 'POST'],
 
     'allowed_origins' => array_filter(array_map('trim', explode(',', env('STORE_CORS_ORIGINS', '*')))) ?: ['*'],
 

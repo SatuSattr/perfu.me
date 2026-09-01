@@ -104,6 +104,14 @@ export function Navbar({ className = "" }: { className?: string }) {
                             Kategori
                         </NavLink>
                     </li>
+                    <li>
+                        <NavLink
+                            href="/orders"
+                            active={isActive("/orders")}
+                        >
+                            Pesanan
+                        </NavLink>
+                    </li>
                 </ul>
 
                 <div className="flex items-center gap-5 justify-end ml-auto">
@@ -233,6 +241,19 @@ export function Navbar({ className = "" }: { className?: string }) {
                     )}
                 >
                     Kategori
+                </Link>
+                <Link
+                    href="/orders"
+                    onClick={() => setMobileOpen(false)}
+                    aria-current={isActive("/orders") ? "page" : undefined}
+                    className={cn(
+                        "font-sans text-[11px] font-medium tracking-[0.18em] uppercase no-underline py-4 border-b border-black/5 block transition-colors duration-200",
+                        isActive("/orders")
+                            ? "text-[#111]"
+                            : "text-[#888] hover:text-[#111]",
+                    )}
+                >
+                    Pesanan
                 </Link>
             </nav>
         </header>

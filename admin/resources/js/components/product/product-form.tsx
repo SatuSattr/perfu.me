@@ -6,7 +6,7 @@ import { Input, TextArea } from '@/components/ui/input';
 import { Button, ButtonLink } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { cn } from '@/lib/utils';
-import { Combobox } from '@/components/form/combobox';
+import { Combobox } from '@/components/ui/combobox';
 import { MediaSection, type MediaItem } from './media-section';
 import { VariantsSection } from './variants-section';
 import type { OptionItem } from './variant-panel';

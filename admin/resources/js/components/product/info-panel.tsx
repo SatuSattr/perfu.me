@@ -4,7 +4,7 @@ import { Check, X } from "lucide-react";
 import { Input, TextArea } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { Combobox } from "@/components/form/combobox";
+import { Combobox } from "@/components/ui/combobox";
 import { cn } from "@/lib/utils";
 
 interface Enums {

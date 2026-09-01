@@ -33,10 +33,11 @@ interface PageProps {
         current_page: number;
         last_page: number;
     };
-    filters: { q: string; type: string; gender: string };
+    filters: { q: string; type: string; gender: string; category: string };
     filterCounts: {
         type: Record<string, number>;
         gender: Record<string, number>;
+        category: Record<string, number>;
     };
 }
 
@@ -86,7 +87,7 @@ export default function ProductsIndex() {
                             label="Filter Atribut"
                             buttonLabel="Filter"
                             value={
-                                [filters.type, filters.gender].filter(
+                                [filters.type, filters.gender, filters.category].filter(
                                     Boolean,
                                 ) as string[]
                             }
@@ -101,7 +102,13 @@ export default function ProductsIndex() {
                                             v,
                                         ),
                                     ) ?? "";
-                                applyFilters({ type, gender });
+                                // category is any remaining value not type/gender
+                                const category =
+                                    next.find(
+                                        (v) =>
+                                            !["signature", "inspired", "Pria", "Wanita", "Unisex"].includes(v),
+                                    ) ?? "";
+                                applyFilters({ type, gender, category });
                             }}
                             groups={[
                                 {
@@ -149,6 +156,15 @@ export default function ProductsIndex() {
                                                 0,
                                         },
                                     ],
+                                },
+                                {
+                                    label: "Kategori",
+                                    maxSelected: 1,
+                                    options: Object.entries(filterCounts?.category ?? {}).map(([code, count]) => ({
+                                        code,
+                                        name: code.toUpperCase(),
+                                        count: count as number,
+                                    })),
                                 },
                             ]}
                             placeholder="Cari atribut..."

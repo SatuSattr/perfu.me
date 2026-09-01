@@ -4,15 +4,28 @@ import { ArrowLeft, MapPin, MapPin as MapPinFilled } from 'lucide-react';
 import { CheckoutStepper } from '../components/layout/CheckoutStepper';
 import { Input, TextArea } from '../components/ui/Input';
 import { Combobox } from '../components/ui/Combobox';
+import { Maps } from '../components/ui/Maps';
 import { useToast } from '../context/ToastContext';
+import { fetchWilayah } from '../lib/wilayah';
 
-const API_BASE = 'https://wilayah.id/api';
+const ADDRESS_CACHE_COOKIE = 'perfu.me:address_cache';
+const CACHE_MAX_AGE = 60 * 60 * 24 * 120; // 120 days
 
-async function fetchWilayah(path, signal) {
-  const res = await fetch(`${API_BASE}${path}`, { signal });
-  if (!res.ok) throw new Error(`Failed ${path}: ${res.status}`);
-  const json = await res.json();
-  return json.data || [];
+function setAddressCache(data) {
+  try {
+    const v = encodeURIComponent(JSON.stringify(data));
+    document.cookie = `${ADDRESS_CACHE_COOKIE}=${v}; max-age=${CACHE_MAX_AGE}; path=/; SameSite=Lax`;
+  } catch {}
+}
+
+function getAddressCache() {
+  try {
+    const m = document.cookie.match(new RegExp('(?:^|; )' + ADDRESS_CACHE_COOKIE.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '=([^;]*)'));
+    if (!m) return null;
+    return JSON.parse(decodeURIComponent(m[1]));
+  } catch {
+    return null;
+  }
 }
 
 export function AddressPage() {
@@ -38,55 +51,96 @@ export function AddressPage() {
   const [loadingRegencies, setLoadingRegencies] = useState(false);
   const [loadingDistricts, setLoadingDistricts] = useState(false);
   const [loadingVillages, setLoadingVillages] = useState(false);
+  const [hasRestoredCache, setHasRestoredCache] = useState(false);
 
-  // Fetch provinces on mount
+  // Fetch provinces on mount (RAM cached, no abort needed for initial)
   useEffect(() => {
-    const ctrl = new AbortController();
     setLoadingProvinces(true);
-    fetchWilayah('/provinces.json', ctrl.signal)
+    fetchWilayah('/provinces.json')
       .then(setProvinces)
-      .catch((e) => { if (e.name !== 'AbortError') toast.error('Gagal memuat provinsi'); })
+      .catch(() => toast.error('Gagal memuat provinsi'))
       .finally(() => setLoadingProvinces(false));
-    return () => ctrl.abort();
   }, []);
 
-  // Fetch regencies when province changes
+  // Restore address cache (cookies) — only wilayah + street/detail, not nama/WA/email
+  useEffect(() => {
+    if (hasRestoredCache) return;
+    const cached = getAddressCache();
+    if (!cached) {
+      setHasRestoredCache(true);
+      return;
+    }
+    setHasRestoredCache(true);
+    const prov = cached.province ? { code: cached.province, name: cached.province_name || cached.province } : null;
+    const city = cached.city ? { code: cached.city, name: cached.city_name || cached.city } : null;
+    const dist = cached.district ? { code: cached.district, name: cached.district_name || cached.district } : null;
+    const vill = cached.village ? { code: cached.village, name: cached.village_name || cached.village } : null;
+    if (prov) setProvinceObj(prov);
+    if (city) setCityObj(city);
+    if (dist) setDistrictObj(dist);
+    if (vill) setVillageObj(vill);
+    setForm((prev) => ({
+      ...prev,
+      province: cached.province || prev.province,
+      city: cached.city || prev.city,
+      district: cached.district || prev.district,
+      village: cached.village || prev.village,
+      street: cached.street || prev.street,
+      detail: cached.detail || prev.detail,
+    }));
+  }, [hasRestoredCache]);
+
+  // Persist address cache to cookies — only 6 fields per spec (no nama/WA/email)
+  useEffect(() => {
+    if (!hasRestoredCache) return;
+    const payload = {
+      province: provinceObj?.code || form.province || '',
+      province_name: provinceObj?.name || '',
+      city: cityObj?.code || form.city || '',
+      city_name: cityObj?.name || '',
+      district: districtObj?.code || form.district || '',
+      district_name: districtObj?.name || '',
+      village: villageObj?.code || form.village || '',
+      village_name: villageObj?.name || '',
+      street: form.street || '',
+      detail: form.detail || '',
+    };
+    const hasAny = payload.province || payload.city || payload.district || payload.village || payload.street || payload.detail;
+    if (!hasAny) return;
+    setAddressCache(payload);
+  }, [provinceObj, cityObj, districtObj, villageObj, form.street, form.detail, hasRestoredCache]);
+
+  // Fetch regencies when province changes (RAM cached)
   useEffect(() => {
     if (!provinceObj?.code) { setRegencies([]); return; }
-    const ctrl = new AbortController();
     setLoadingRegencies(true);
     setRegencies([]);
-    fetchWilayah(`/regencies/${provinceObj.code}.json`, ctrl.signal)
+    fetchWilayah(`/regencies/${provinceObj.code}.json`)
       .then(setRegencies)
-      .catch((e) => { if (e.name !== 'AbortError') toast.error('Gagal memuat kota/kabupaten'); })
+      .catch(() => toast.error('Gagal memuat kota/kabupaten'))
       .finally(() => setLoadingRegencies(false));
-    return () => ctrl.abort();
   }, [provinceObj?.code]);
 
-  // Fetch districts when city changes
+  // Fetch districts when city changes (RAM cached)
   useEffect(() => {
     if (!cityObj?.code) { setDistricts([]); return; }
-    const ctrl = new AbortController();
     setLoadingDistricts(true);
     setDistricts([]);
-    fetchWilayah(`/districts/${cityObj.code}.json`, ctrl.signal)
+    fetchWilayah(`/districts/${cityObj.code}.json`)
       .then(setDistricts)
-      .catch((e) => { if (e.name !== 'AbortError') toast.error('Gagal memuat kecamatan'); })
+      .catch(() => toast.error('Gagal memuat kecamatan'))
       .finally(() => setLoadingDistricts(false));
-    return () => ctrl.abort();
   }, [cityObj?.code]);
 
-  // Fetch villages when district changes
+  // Fetch villages when district changes (RAM cached)
   useEffect(() => {
     if (!districtObj?.code) { setVillages([]); return; }
-    const ctrl = new AbortController();
     setLoadingVillages(true);
     setVillages([]);
-    fetchWilayah(`/villages/${districtObj.code}.json`, ctrl.signal)
+    fetchWilayah(`/villages/${districtObj.code}.json`)
       .then(setVillages)
-      .catch((e) => { if (e.name !== 'AbortError') toast.error('Gagal memuat kelurahan/desa'); })
+      .catch(() => toast.error('Gagal memuat kelurahan/desa'))
       .finally(() => setLoadingVillages(false));
-    return () => ctrl.abort();
   }, [districtObj?.code]);
 
   function validate() {
@@ -236,20 +290,13 @@ export function AddressPage() {
                   <span>{locating ? 'Mencari...' : 'Lokasi Saya'}</span>
                 </button>
               </div>
-              <div className="w-full h-[380px] rounded-lg overflow-hidden border border-black/10 relative z-0 bg-[#f0f0f0] flex flex-col items-center justify-center gap-3">
-                {!mapPin ? (
-                  <div className="flex flex-col items-center gap-2 text-center px-8">
-                    <MapPin size={32} strokeWidth={1.5} className="text-[#bbb]" />
-                    <p className="font-sans text-[12px] text-[#aaa]">Klik "Lokasi Saya" untuk menandai lokasi,<br/>atau biarkan kosong untuk melewati langkah ini.</p>
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-center gap-2">
-                    <MapPinFilled size={32} strokeWidth={1.5} fill="currentColor" className="text-[#1a1a1a]" />
-                    <p className="font-sans text-[12px] text-[#555]">Lat: {mapPin.lat.toFixed(5)}, Lng: {mapPin.lng.toFixed(5)}</p>
-                    <button type="button" onClick={()=> setMapPin(null)} className="font-sans text-[10px] text-[#888] hover:text-[#111] underline cursor-pointer border-none bg-transparent">Hapus pin</button>
-                  </div>
-                )}
-              </div>
+              <Maps province={provinceObj} city={cityObj} district={districtObj} village={villageObj} pin={mapPin} setPin={setMapPin} locating={locating} />
+              {mapPin && (
+                <div className="flex items-center gap-2">
+                  <p className="font-sans text-[12px] text-[#555]">Lat: {mapPin.lat.toFixed(5)}, Lng: {mapPin.lng.toFixed(5)}</p>
+                  <button type="button" onClick={() => setMapPin(null)} className="font-sans text-[10px] text-[#888] hover:text-[#111] underline cursor-pointer border-none bg-transparent">Hapus pin</button>
+                </div>
+              )}
               <p className="font-sans text-[11px] leading-relaxed text-[#888]">Tidak perlu terlalu akurat. Cukup letakkan pin di sekitar lokasi pengiriman; pin ini opsional dan dapat dilewati.</p>
             </div>
 

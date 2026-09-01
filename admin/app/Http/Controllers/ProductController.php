@@ -48,6 +48,12 @@ class ProductController extends Controller
             }
         }
 
+        if ($category = $request->string('category')->toString()) {
+            if (Category::where('slug', $category)->exists()) {
+                $query->where('category', $category);
+            }
+        }
+
         $products = $query->orderByDesc('updated_at')->paginate(12)->withQueryString();
 
         $products->through(fn (Product $p) => [
@@ -69,6 +75,7 @@ class ProductController extends Controller
 
         $typeCounts = Product::query()->selectRaw('type, COUNT(*) as c')->groupBy('type')->pluck('c', 'type')->toArray();
         $genderCounts = Product::query()->selectRaw('gender, COUNT(*) as c')->groupBy('gender')->pluck('c', 'gender')->toArray();
+        $categoryCounts = Product::query()->selectRaw('category, COUNT(*) as c')->groupBy('category')->pluck('c', 'category')->toArray();
 
         return Inertia::render('products/index', [
             'products' => $products,
@@ -76,10 +83,12 @@ class ProductController extends Controller
                 'q' => $request->string('q')->toString(),
                 'type' => $request->string('type')->toString(),
                 'gender' => $request->string('gender')->toString(),
+                'category' => $request->string('category')->toString(),
             ],
             'filterCounts' => [
                 'type' => $typeCounts,
                 'gender' => $genderCounts,
+                'category' => $categoryCounts,
             ],
         ]);
     }

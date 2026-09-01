@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Combobox } from '@/components/form/combobox';
+import { Combobox } from '@/components/ui/combobox';
 import { ChoiceRow, type ChoiceItem } from './choice-row';
 
 export interface OptionItem {

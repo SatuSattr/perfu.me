@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use Illuminate\Support\Facades\Route;
 
@@ -49,4 +50,11 @@ Route::middleware('auth:admin')->group(function () {
     Route::post('/categories/types', [CategoryController::class, 'storeType'])->name('categories.types.store');
     Route::put('/categories/types/{productType}', [CategoryController::class, 'updateType'])->name('categories.types.update');
     Route::delete('/categories/types/{productType}', [CategoryController::class, 'destroyType'])->name('categories.types.destroy');
+
+    // Orders
+    Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
+    Route::get('/orders/{order:code}', [OrderController::class, 'show'])->name('orders.show');
+    Route::patch('/orders/{order:code}/status', [OrderController::class, 'updateStatus'])->name('orders.status');
+    Route::post('/orders/{order:code}/whatsapp', [OrderController::class, 'sendWhatsapp'])->name('orders.whatsapp');
+    Route::delete('/orders/{order:code}', [OrderController::class, 'destroy'])->name('orders.destroy');
 });

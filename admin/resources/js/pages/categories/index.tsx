@@ -5,6 +5,7 @@ import { AppLayout } from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table } from '@/components/ui/table';
+import { SearchBar } from '@/components/ui/search-bar';
 import { SidePanel } from '@/components/ui/side-panel';
 import { ConfirmDialog } from '@/components/feedback/confirm-dialog';
 import { CategoryFormPanel } from '@/components/category/category-form-panel';
@@ -64,6 +65,8 @@ export default function CategoriesPage() {
     const [panelDirty, setPanelDirty] = useState(false);
     const [showUnsavedConfirm, setShowUnsavedConfirm] = useState(false);
     const [confirmDelete, setConfirmDelete] = useState<{ table: 'category' | 'type'; slug: string } | null>(null);
+    const [categoryQ, setCategoryQ] = useState('');
+    const [typeQ, setTypeQ] = useState('');
 
     const isPanelOpen = panelMode !== null;
 
@@ -76,6 +79,18 @@ export default function CategoriesPage() {
         if (panelTable !== 'type' || !activeSlug) return null;
         return types.find((t) => t.slug === activeSlug) ?? null;
     }, [panelTable, activeSlug, types]);
+
+    const filteredCategories = useMemo(() => {
+        const q = categoryQ.trim().toLowerCase();
+        if (!q) return categories;
+        return categories.filter((c) => `${c.name} ${c.slug} ${c.description ?? ''}`.toLowerCase().includes(q));
+    }, [categories, categoryQ]);
+
+    const filteredTypes = useMemo(() => {
+        const q = typeQ.trim().toLowerCase();
+        if (!q) return types;
+        return types.filter((t) => `${t.name} ${t.slug} ${t.description ?? ''}`.toLowerCase().includes(q));
+    }, [types, typeQ]);
 
     useEffect(() => {
         if (initialIsCreate) {
@@ -215,26 +230,42 @@ export default function CategoriesPage() {
 
                 {/* Categories */}
                 <div className="flex flex-col gap-4">
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-col gap-1">
                         <h2 className="font-sans text-[14px] font-semibold text-[#1a1a1a]">Kategori</h2>
-                        <Button variant="primary" size="sm" onClick={() => openCreate('category')} className="rounded-full">
-                            <Plus size={14} strokeWidth={1.8} />
-                            Tambah Kategori
-                        </Button>
+                        <p className="font-sans text-[12px] text-[#888]">{filteredCategories.length} kategori</p>
                     </div>
-                    {renderTable(categories, 'category')}
+                    <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
+                        <div className="flex-1 min-w-0">
+                            <SearchBar value={categoryQ} onChange={setCategoryQ} onSearch={() => {}} placeholder="Cari kategori..." className="w-full" />
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                            <Button variant="primary" size="lg" onClick={() => openCreate('category')} className="whitespace-nowrap">
+                                <Plus size={14} strokeWidth={1.8} />
+                                Tambah Kategori
+                            </Button>
+                        </div>
+                    </div>
+                    {renderTable(filteredCategories, 'category')}
                 </div>
 
                 {/* Types */}
                 <div className="flex flex-col gap-4">
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-col gap-1">
                         <h2 className="font-sans text-[14px] font-semibold text-[#1a1a1a]">Tipe</h2>
-                        <Button variant="primary" size="sm" onClick={() => openCreate('type')} className="rounded-full">
-                            <Plus size={14} strokeWidth={1.8} />
-                            Tambah Tipe
-                        </Button>
+                        <p className="font-sans text-[12px] text-[#888]">{filteredTypes.length} tipe</p>
                     </div>
-                    {renderTable(types, 'type')}
+                    <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
+                        <div className="flex-1 min-w-0">
+                            <SearchBar value={typeQ} onChange={setTypeQ} onSearch={() => {}} placeholder="Cari tipe..." className="w-full" />
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                            <Button variant="primary" size="lg" onClick={() => openCreate('type')} className="whitespace-nowrap">
+                                <Plus size={14} strokeWidth={1.8} />
+                                Tambah Tipe
+                            </Button>
+                        </div>
+                    </div>
+                    {renderTable(filteredTypes, 'type')}
                 </div>
             </div>
 

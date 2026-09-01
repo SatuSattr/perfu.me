@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\V1\CategoryController;
+use App\Http\Controllers\Api\V1\OrderController as ApiOrderController;
 use App\Http\Controllers\Api\V1\ProductController;
 use Illuminate\Support\Facades\Route;
 
@@ -34,4 +35,5 @@ Route::prefix('v1')->middleware('throttle:60,1')->group(function () {
     Route::get('/products/{slug}', [ProductController::class, 'show']);
     Route::get('/categories', [CategoryController::class, 'categories']);
     Route::get('/types', [CategoryController::class, 'types']);
+    Route::post('/orders', [ApiOrderController::class, 'store']);
 });
