@@ -37,7 +37,8 @@ export function VariantsSection({
     const isPanelOpen = panelMode !== null;
 
     function renumber(list: OptionItem[]) {
-        return list.map((o, i) => ({
+        const sorted = [...list].sort((a, b) => Number(b.is_base) - Number(a.is_base));
+        return sorted.map((o, i) => ({
             ...o,
             position: i,
             choices: o.choices.map((c, ci) => ({ ...c, position: ci })),
@@ -82,37 +83,48 @@ export function VariantsSection({
     }
 
     function handleSave(draft: OptionItem) {
-        // Check duplicate key (exclude editing index)
         const dupIdx = options.findIndex(
             (o, i) => o.key === draft.key && i !== editingIndex,
         );
         if (dupIdx !== -1) {
-            // Let VariantFormPanel handle via validation? For now we allow but BE will accept; we show simple guard
-            // Instead, we could show error — but VariantFormPanel already validates format, not dup. We'll just allow and let BE handle.
         }
 
+        // Ensure only one is_base
+        let normalizedDraft = { ...draft, required: draft.is_base ? true : draft.required };
         if (panelMode === "create") {
-            const next = renumber([
-                ...options,
-                { ...draft, position: options.length },
-            ]);
-            persist(next);
+            let next = [...options, { ...normalizedDraft, position: options.length }];
+            if (normalizedDraft.is_base) {
+                next = next.map((o, i) => (i !== next.length - 1 ? { ...o, is_base: false } : o));
+            } else if (!next.some((o) => o.is_base)) {
+                // auto-assign first as base if none
+                next[0] = { ...next[0], is_base: true, required: true };
+            }
+            persist(renumber(next));
         } else if (panelMode === "edit" && editingIndex !== null) {
-            const merged = options.map((o, i) =>
-                i === editingIndex ? { ...draft, position: i } : o,
+            let merged = options.map((o, i) =>
+                i === editingIndex ? { ...normalizedDraft, position: i } : o,
             );
+            if (normalizedDraft.is_base) {
+                merged = merged.map((o, i) => (i !== editingIndex ? { ...o, is_base: false } : o));
+            }
             persist(renumber(merged));
         }
         doClosePanel();
     }
 
     function removeAt(idx: number) {
-        persist(renumber(options.filter((_, i) => i !== idx)));
+        let next = options.filter((_, i) => i !== idx);
+        if (next.length && !next.some((o) => o.is_base)) {
+            next[0] = { ...next[0], is_base: true, required: true };
+        }
+        persist(renumber(next));
         setConfirmDeleteIndex(null);
     }
 
     function move(from: number, to: number) {
         if (to < 0 || to >= options.length) return;
+        if (options[from]?.is_base) return;
+        if (options[to]?.is_base) return;
         const next = [...options];
         const [m] = next.splice(from, 1);
         next.splice(to, 0, m);

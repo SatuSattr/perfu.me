@@ -18,11 +18,7 @@ return [
 
     'allowed_methods' => ['GET', 'HEAD', 'OPTIONS'],
 
-    'allowed_origins' => ['*'],
-
-    // If you want to restrict to store origins only, set:
-    // 'allowed_origins' => array_filter(array_map('trim', explode(',', env('STORE_CORS_ORIGINS', '*')))),
-    // and set STORE_CORS_ORIGINS=http://localhost:5173,https://perfu.me in .env
+    'allowed_origins' => array_filter(array_map('trim', explode(',', env('STORE_CORS_ORIGINS', '*')))) ?: ['*'],
 
     'allowed_origins_patterns' => [],
 

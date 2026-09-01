@@ -2,17 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\ProductCategory;
 use App\Enums\ProductGender;
 use App\Enums\ProductOptionMode;
-use App\Enums\ProductType;
 use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductBasicRequest;
 use App\Http\Requests\UpdateProductMediaRequest;
 use App\Http\Requests\UpdateProductOptionsRequest;
 use App\Http\Requests\UpdateProductRequest;
+use App\Models\Category;
 use App\Models\Product;
 use App\Models\ProductReview;
+use App\Models\ProductType;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -37,7 +37,7 @@ class ProductController extends Controller
         }
 
         if ($type = $request->string('type')->toString()) {
-            if (in_array($type, ProductType::values(), true)) {
+            if (ProductType::where('slug', $type)->exists()) {
                 $query->where('type', $type);
             }
         }
@@ -56,10 +56,10 @@ class ProductController extends Controller
             'name' => $p->name,
             'tagline' => $p->tagline,
             'gender' => $p->gender->value,
-            'type' => $p->type->value,
-            'category' => $p->category->value,
-            'price' => $p->price,
-            'stock' => $p->stock,
+            'type' => $p->type,
+            'category' => $p->category,
+            'price' => $p->lowestPrice(),
+            'stock' => null,
             'is_active' => $p->is_active,
             'image' => $p->image,
             'totalStock' => $p->totalStock(),
@@ -88,6 +88,7 @@ class ProductController extends Controller
     {
         return Inertia::render('products/create', [
             'enums' => $this->enums(),
+            'featuredCount' => Product::where('is_featured', true)->count(),
         ]);
     }
 
@@ -118,6 +119,7 @@ class ProductController extends Controller
                 'updated_at' => $product->updated_at?->toISOString(),
             ],
             'enums' => $this->enums(),
+            'featuredCount' => Product::where('is_featured', true)->count(),
         ]);
     }
 
@@ -185,12 +187,65 @@ class ProductController extends Controller
         if ($request->expectsJson() || $request->wantsJson()) {
             return response()->json([
                 'images' => $product->images->pluck('path')->all(),
+                'media' => $product->images->map(fn ($img) => ['path' => $img->path, 'type' => $img->type ?? 'image'])->all(),
                 'image' => $product->image,
                 'detail_image' => $product->detail_image,
             ]);
         }
 
         return redirect()->back()->with('success', 'Media disimpan.');
+    }
+
+    public function uploadMedia(Request $request, Product $product): JsonResponse
+    {
+        $request->validate([
+            'file' => ['required', 'file', 'max:102400', 'mimes:jpeg,jpg,png,webp,mp4,webm,mov,quicktime'],
+            'position' => ['nullable', 'integer', 'min:0', 'max:6'],
+        ]);
+
+        if ($product->images()->count() >= 6) {
+            return response()->json(['message' => 'Maksimal 6 media sudah tercapai.'], 422);
+        }
+
+        $file = $request->file('file');
+        $mime = $file->getMimeType();
+        $isVideo = str_starts_with($mime ?? '', 'video/');
+        $max = $isVideo ? 100 * 1024 * 1024 : 2 * 1024 * 1024;
+        if ($file->getSize() > $max) {
+            return response()->json(['message' => $isVideo ? 'Maksimal 100MB per video.' : 'Maksimal 2MB per foto.'], 422);
+        }
+
+        $stored = $file->store('products', 'public');
+        $path = '/storage/'.$stored;
+        $type = $isVideo ? 'video' : 'image';
+
+        $position = $request->has('position') ? (int) $request->input('position') : (int) ($product->images()->max('position') + 1);
+        // shift existing if position collides
+        $product->images()->where('position', '>=', $position)->increment('position');
+
+        $image = $product->images()->create([
+            'path' => $path,
+            'type' => $type,
+            'mime' => $mime,
+            'position' => $position,
+        ]);
+
+        // recompute card images
+        $imageCandidates = $product->images()->where('type', '!=', 'video')->orderBy('position')->pluck('path')->all();
+        $paths = $product->images()->orderBy('position')->pluck('path')->all();
+        $product->update([
+            'image' => $imageCandidates[0] ?? $paths[0] ?? null,
+            'detail_image' => $imageCandidates[1] ?? $paths[1] ?? null,
+        ]);
+
+        $product->refresh()->load(['images']);
+
+        return response()->json([
+            'media' => $product->images->sortBy('position')->map(fn ($img) => ['id' => $img->id, 'path' => $img->path, 'type' => $img->type ?? 'image', 'mime' => $img->mime, 'position' => $img->position])->values()->all(),
+            'uploaded' => ['id' => $image->id, 'path' => $path, 'type' => $type, 'mime' => $mime, 'position' => $image->position],
+            'image' => $product->image,
+            'detail_image' => $product->detail_image,
+        ]);
     }
 
     public function updateOptions(UpdateProductOptionsRequest $request, Product $product): JsonResponse|RedirectResponse
@@ -471,8 +526,8 @@ class ProductController extends Controller
     {
         return [
             'genders' => ProductGender::values(),
-            'types' => ProductType::values(),
-            'categories' => ProductCategory::values(),
+            'types' => ProductType::where('is_active', true)->orderBy('name')->pluck('slug')->all(),
+            'categories' => Category::where('is_active', true)->orderBy('name')->pluck('slug')->all(),
             'optionModes' => ProductOptionMode::values(),
         ];
     }
@@ -498,12 +553,10 @@ class ProductController extends Controller
             'tagline' => $data['tagline'] ?? null,
             'description' => $data['description'] ?? null,
             'gender' => $data['gender'],
-            'price' => $data['price'],
-            'stock' => $data['stock'] ?? null,
             'category' => $data['category'],
             'type' => $data['type'],
-            'size_label' => $data['size_label'] ?? null,
             'is_active' => (bool) ($data['is_active'] ?? true),
+            'is_featured' => (bool) ($data['is_featured'] ?? false),
         ]);
     }
 
@@ -523,12 +576,10 @@ class ProductController extends Controller
             'tagline' => $data['tagline'] ?? null,
             'description' => $data['description'] ?? null,
             'gender' => $data['gender'],
-            'price' => $data['price'],
-            'stock' => $data['stock'] ?? null,
             'category' => $data['category'],
             'type' => $data['type'],
-            'size_label' => $data['size_label'] ?? null,
             'is_active' => (bool) ($data['is_active'] ?? true),
+            'is_featured' => (bool) ($data['is_featured'] ?? $product->is_featured),
         ]);
     }
 
@@ -540,31 +591,64 @@ class ProductController extends Controller
         $product->images()->delete();
 
         $paths = [];
+        $firstImagePath = null;
         foreach ($images as $index => $img) {
             $position = isset($img['position']) ? (int) $img['position'] : $index;
             $path = $img['path'] ?? null;
+            $type = $img['type'] ?? 'image';
+            $mime = null;
 
             $fileKey = "images.{$index}.file";
             if ($request->hasFile($fileKey)) {
                 $file = $request->file($fileKey);
+                $mime = $file->getMimeType();
+                $type = str_starts_with($mime ?? '', 'video/') ? 'video' : 'image';
                 $stored = $file->store('products', 'public');
                 $path = '/storage/'.$stored;
+            } else {
+                // infer type from path/extension if not provided
+                if ($type === 'video' || ($path && preg_match('/\.(mp4|webm|mov)$/i', $path))) {
+                    $type = 'video';
+                } else {
+                    $type = 'image';
+                }
+                // try to infer mime from extension
+                if ($path && $type === 'video' && ! $mime) {
+                    $mime = str_ends_with(strtolower($path), '.webm') ? 'video/webm' : 'video/mp4';
+                }
             }
 
             if (empty($path)) {
                 continue;
             }
 
+            // skip invalid type fallback
+            if (! in_array($type, ['image', 'video'], true)) {
+                $type = 'image';
+            }
+
             $paths[] = $path;
+            if ($firstImagePath === null && $type === 'image') {
+                $firstImagePath = $path;
+            }
             $product->images()->create([
                 'path' => $path,
+                'type' => $type,
+                'mime' => $mime,
                 'position' => $position,
             ]);
         }
 
+        // image/detail_image should be first image (not video) for card display
+        $imageCandidates = [];
+        foreach ($product->images()->orderBy('position')->get() as $img) {
+            if ($img->type !== 'video') {
+                $imageCandidates[] = $img->path;
+            }
+        }
         $product->update([
-            'image' => $paths[0] ?? null,
-            'detail_image' => $paths[1] ?? null,
+            'image' => $imageCandidates[0] ?? $paths[0] ?? null,
+            'detail_image' => $imageCandidates[1] ?? $paths[1] ?? null,
         ]);
     }
 
@@ -575,15 +659,19 @@ class ProductController extends Controller
     {
         $product->options()->delete();
 
+        usort($options, fn ($a, $b) => (int) (! empty($b['is_base'])) <=> (int) (! empty($a['is_base'])));
+
         foreach ($options as $optIndex => $opt) {
             $position = isset($opt['position']) ? (int) $opt['position'] : $optIndex;
             $isRequired = $opt['is_required'] ?? $opt['required'] ?? true;
+            $isBase = ! empty($opt['is_base']);
 
             $option = $product->options()->create([
                 'key' => $opt['key'],
                 'label' => $opt['label'],
                 'mode' => $opt['mode'],
-                'is_required' => (bool) $isRequired,
+                'is_required' => $isBase ? true : (bool) $isRequired,
+                'is_base' => $isBase,
                 'position' => $position,
             ]);
 
@@ -591,7 +679,7 @@ class ProductController extends Controller
                 $option->choices()->create([
                     'key' => $choice['key'],
                     'name' => $choice['name'],
-                    'price' => $choice['price'] ?? null,
+                    'price' => (int) $choice['price'],
                     'stock' => (int) $choice['stock'],
                     'position' => isset($choice['position']) ? (int) $choice['position'] : $choiceIndex,
                     'is_active' => true,

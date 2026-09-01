@@ -1,0 +1,22 @@
+- generic [ref=e4]:
+  - img "Perfu.me brand story" [ref=e6]
+  - generic [ref=e7]:
+    - generic [ref=e8]:
+      - heading "Masuk" [level=1] [ref=e9]
+      - paragraph [ref=e10]: Dashboard untuk mulai mengelola toko.
+    - generic [ref=e11]:
+      - generic [ref=e12]:
+        - generic [ref=e13]: Email
+        - textbox "Email" [active] [ref=e15]:
+          - /placeholder: admin@perfu.me
+      - generic [ref=e16]:
+        - generic [ref=e17]: Password
+        - generic [ref=e18]:
+          - textbox "Password" [ref=e19]:
+            - /placeholder: ••••••••
+          - button "Lihat password" [ref=e20] [cursor=pointer]
+      - generic [ref=e25] [cursor=pointer]:
+        - checkbox "Ingat saya" [ref=e27]
+        - generic [ref=e31]: Ingat saya
+      - button "Masuk" [ref=e32] [cursor=pointer]
+    - paragraph [ref=e33]: Hanya admin terdaftar yang dapat masuk.

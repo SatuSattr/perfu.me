@@ -2,9 +2,7 @@
 
 namespace App\Models;
 
-use App\Enums\ProductCategory;
 use App\Enums\ProductGender;
-use App\Enums\ProductType;
 use Database\Factories\ProductFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
@@ -23,14 +21,12 @@ use Illuminate\Support\Str;
  * @property string|null $tagline
  * @property string|null $description
  * @property ProductGender $gender
- * @property int $price
- * @property int|null $stock
- * @property ProductCategory $category
- * @property ProductType $type
+ * @property string $category
+ * @property string $type
  * @property string|null $image
  * @property string|null $detail_image
- * @property string|null $size_label
  * @property bool $is_active
+ * @property bool $is_featured
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property-read Collection<int, ProductImage> $images
@@ -43,14 +39,12 @@ use Illuminate\Support\Str;
     'tagline',
     'description',
     'gender',
-    'price',
-    'stock',
     'category',
     'type',
     'image',
     'detail_image',
-    'size_label',
     'is_active',
+    'is_featured',
 ])]
 class Product extends Model
 {
@@ -61,12 +55,14 @@ class Product extends Model
     {
         return [
             'gender' => ProductGender::class,
-            'category' => ProductCategory::class,
-            'type' => ProductType::class,
-            'price' => 'integer',
-            'stock' => 'integer',
             'is_active' => 'boolean',
+            'is_featured' => 'boolean',
         ];
+    }
+
+    public function scopeFeatured(Builder $query): Builder
+    {
+        return $query->where('is_featured', true);
     }
 
     public function getRouteKeyName(): string
@@ -133,6 +129,24 @@ class Product extends Model
         return $this->hasManyThrough(ProductOptionChoice::class, ProductOption::class);
     }
 
+    public function baseOption(): ?ProductOption
+    {
+        if ($this->relationLoaded('options')) {
+            return $this->options->firstWhere('is_base', true);
+        }
+
+        return $this->options()->where('is_base', true)->first();
+    }
+
+    /**
+     * @return HasMany<ProductOptionChoice, $this>
+     */
+    public function baseChoices(): HasManyThrough
+    {
+        return $this->hasManyThrough(ProductOptionChoice::class, ProductOption::class)
+            ->where('product_options.is_base', true);
+    }
+
     // ── Scopes ──────────────────────────────────────────────────────────
 
     /**
@@ -148,7 +162,7 @@ class Product extends Model
      */
     public function scopeSignature(Builder $query): Builder
     {
-        return $query->where('type', ProductType::Signature);
+        return $query->where('type', 'signature');
     }
 
     /**
@@ -156,7 +170,7 @@ class Product extends Model
      */
     public function scopeInspired(Builder $query): Builder
     {
-        return $query->where('type', ProductType::Inspired);
+        return $query->where('type', 'inspired');
     }
 
     /**
@@ -178,66 +192,55 @@ class Product extends Model
 
     public function isSignature(): bool
     {
-        return $this->type === ProductType::Signature;
+        return $this->type === 'signature';
     }
 
     public function isInspired(): bool
     {
-        return $this->type === ProductType::Inspired;
+        return $this->type === 'inspired';
     }
 
     /**
      * Whether product (or any variant) is in stock.
-     * Mirrors frontend `availableStock` logic.
+     * Pure variant-driven: check base variant stock.
      */
     public function isInStock(): bool
     {
-        if ($this->stock !== null) {
-            return $this->stock > 0;
-        }
-
-        return $this->optionChoices()->where('stock', '>', 0)->exists();
+        return $this->baseChoices()->where('stock', '>', 0)->exists();
     }
 
     /**
-     * Total available stock across product + variants.
+     * Total available stock = sum of base variant choices.
      */
     public function totalStock(): int
     {
-        if ($this->stock !== null) {
-            return $this->stock;
-        }
-
-        return (int) $this->optionChoices()->sum('stock');
+        return (int) $this->baseChoices()->sum('stock');
     }
 
     /**
-     * Lowest effective price (base or cheapest variant).
+     * Lowest effective price = cheapest choice in base variant.
+     * Additive variants: price = basePrice + sum(modifiers)
      */
     public function lowestPrice(): int
     {
-        $choicePrice = $this->optionChoices()
-            ->whereNotNull('price')
-            ->min('price');
+        $min = $this->baseChoices()->min('price');
 
-        if ($choicePrice !== null) {
-            return (int) min($this->price, $choicePrice);
-        }
-
-        return $this->price;
+        return $min !== null ? (int) $min : 0;
     }
 
     /**
-     * Price range for display, e.g. [20000, 50000].
+     * Price range from base variant only.
      *
      * @return array{int, int}
      */
     public function priceRange(): array
     {
-        $prices = $this->optionChoices()->whereNotNull('price')->pluck('price')->all();
-        $prices[] = $this->price;
+        $prices = $this->baseChoices()->pluck('price')->all();
 
-        /** @var array<int> $prices */
+        if (empty($prices)) {
+            return [0, 0];
+        }
+
         return [min($prices), max($prices)];
     }
 
@@ -258,6 +261,16 @@ class Product extends Model
     {
         $this->loadMissing(['images', 'options.choices', 'visibleReviews']);
 
+        // Media payload: support image + video
+        $media = $this->images->map(fn (ProductImage $img) => [
+            'path' => $img->path,
+            'type' => $img->type ?? 'image',
+            'mime' => $img->mime,
+        ])->all();
+
+        // Legacy images string[] for backward compat
+        $legacyImages = $this->images->pluck('path')->all();
+
         return [
             'id' => $this->id,
             'slug' => $this->slug,
@@ -265,14 +278,16 @@ class Product extends Model
             'tagline' => $this->tagline,
             'description' => $this->description,
             'gender' => $this->gender->value,
-            'price' => $this->price,
-            'stock' => $this->stock,
-            'category' => $this->category->value,
-            'type' => $this->type->value,
+            'price' => $this->lowestPrice(),
+            'stock' => null,
+            'category' => $this->category,
+            'type' => $this->type,
             'image' => $this->image,
             'detailImage' => $this->detail_image,
-            'images' => $this->images->pluck('path')->all(),
-            'sizeLabel' => $this->size_label,
+            'images' => $legacyImages,
+            'media' => $media,
+            'is_featured' => $this->is_featured,
+            'sizeLabel' => null,
             'options' => $this->options->map(fn (ProductOption $opt) => $opt->toStorePayload())->all(),
             'reviews' => $this->visibleReviews->map(fn (ProductReview $r) => $r->toStorePayload())->all(),
         ];

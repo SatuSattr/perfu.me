@@ -5,7 +5,20 @@ const STORAGE_KEY = 'perfu.me:cart';
 
 function load() {
   try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY)) ?? [];
+    const raw = JSON.parse(localStorage.getItem(STORAGE_KEY)) ?? [];
+    // migrate old /assets/products → /storage/products (deleted static)
+    let migrated = false;
+    const out = raw.map((it) => {
+      if (it.image && it.image.startsWith('/assets/products')) {
+        migrated = true;
+        return { ...it, image: it.image.replace('/assets/products', '/storage/products') };
+      }
+      return it;
+    });
+    if (migrated) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(out));
+    }
+    return out;
   } catch {
     return [];
   }
@@ -32,12 +45,20 @@ export function CartProvider({ children }) {
   const cartCount = cart.reduce((s, i) => s + (i.qty ?? 1), 0);
   const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
 
-  const addItem = useCallback((item) => {
+  const addItem = useCallback((item, opts = {}) => {
     const current = load();
     const key = JSON.stringify(item.selectedOptions ?? {});
+    const maxStock = opts.maxStock ?? item.maxStock ?? null;
     const existing = current.find((i) => i.id === item.id && JSON.stringify(i.selectedOptions ?? {}) === key);
-    if (existing) existing.qty += item.qty;
-    else current.push(item);
+    if (existing) {
+      const nextQty = existing.qty + (item.qty ?? 1);
+      existing.qty = maxStock ? Math.min(nextQty, maxStock) : nextQty;
+      if (maxStock) existing.maxStock = maxStock;
+    } else {
+      const entry = { ...item, qty: maxStock ? Math.min(item.qty ?? 1, maxStock) : (item.qty ?? 1) };
+      if (maxStock) entry.maxStock = maxStock;
+      current.push(entry);
+    }
     save(current);
     setCart([...current]);
   }, []);
@@ -52,7 +73,10 @@ export function CartProvider({ children }) {
     const current = load();
     const found = current.find((i) => i.id === target.id && JSON.stringify(i.selectedOptions) === JSON.stringify(target.selectedOptions));
     if (found) {
-      found.qty = Math.max(1, qty);
+      const max = found.maxStock ?? null;
+      let next = Math.max(1, qty);
+      if (max) next = Math.min(next, max);
+      found.qty = next;
       save(current);
       setCart([...current]);
     }

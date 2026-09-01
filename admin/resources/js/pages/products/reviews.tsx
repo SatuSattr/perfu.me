@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { SearchBar } from "@/components/ui/search-bar";
 import { CheckedCombobox } from "@/components/ui/checked-combobox";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Table } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import { SidePanel } from "@/components/ui/side-panel";
 import { ConfirmDialog } from "@/components/feedback/confirm-dialog";
@@ -315,170 +316,113 @@ export default function ProductReviewsPage() {
                     </div>
                 )}
 
-                {/* Table */}
-                <div className="border border-[#e6e6e6] rounded-2xl overflow-hidden bg-white">
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left border-collapse">
-                            <thead>
-                                <tr className="bg-[#fafafa] border-b border-[#e6e6e6]">
-                                    <th className="w-5 pl-4 pr-0 py-3">
-                                        <div className="flex justify-center">
-                                            <span
-                                                className={
-                                                    selected.size > 0
-                                                        ? "inline-flex transition-opacity duration-200 opacity-100"
-                                                        : "inline-flex transition-opacity duration-200 opacity-0 pointer-events-none"
-                                                }
-                                                aria-hidden={selected.size === 0}
-                                            >
-                                                <Checkbox
-                                                    checked={allSelected}
-                                                    onCheckedChange={(v) => toggleAll(!!v)}
-                                                    aria-label="Pilih semua ulasan"
-                                                    tabIndex={selected.size > 0 ? 0 : -1}
-                                                />
-                                            </span>
-                                            {selected.size === 0 && <span className="sr-only">Pilih</span>}
+                <Table<ReviewRow & Record<string, unknown>>
+                    columns={[
+                        {
+                            key: 'select',
+                            header: (
+                                <div className="flex justify-center">
+                                    <span
+                                        className={
+                                            selected.size > 0
+                                                ? 'inline-flex transition-opacity duration-200 opacity-100'
+                                                : 'inline-flex transition-opacity duration-200 opacity-0 pointer-events-none'
+                                        }
+                                        aria-hidden={selected.size === 0}
+                                    >
+                                        <Checkbox
+                                            checked={allSelected}
+                                            onCheckedChange={(v) => toggleAll(!!v)}
+                                            aria-label="Pilih semua ulasan"
+                                            tabIndex={selected.size > 0 ? 0 : -1}
+                                        />
+                                    </span>
+                                    {selected.size === 0 && <span className="sr-only">Pilih</span>}
+                                </div>
+                            ),
+                            headerClassName: 'w-5 pl-4 pr-0 py-3',
+                            cellClassName: 'w-5 pl-4 pr-0 py-3 align-middle',
+                            render: (_v, row) => {
+                                const r = row as ReviewRow;
+                                const isChecked = selected.has(r.id);
+                                return (
+                                    <div className="flex justify-center">
+                                        <span className={cn('inline-flex transition-opacity duration-200', isChecked ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 focus-within:opacity-100')}>
+                                            <Checkbox checked={isChecked} onCheckedChange={(v) => toggleOne(r.id, !!v)} aria-label={`Pilih ulasan ${r.name}`} />
+                                        </span>
+                                    </div>
+                                );
+                            },
+                        },
+                        {
+                            key: 'message',
+                            header: 'Ulasan',
+                            render: (_v, row) => {
+                                const r = row as ReviewRow;
+                                return (
+                                    <div className="flex gap-3 min-w-0">
+                                        <div className="w-8 h-8 rounded-full bg-[#f0f0f0] border border-[#e6e6e6] flex items-center justify-center shrink-0 mt-0.5">
+                                            <span className="font-sans text-[10px] font-medium tracking-[0.08em] text-[#1a1a1a]">{getInitials(r.name)}</span>
                                         </div>
-                                    </th>
-                                    <th className="font-sans text-[10px] uppercase tracking-[0.12em] text-[#888] px-4 py-3 whitespace-nowrap">Ulasan</th>
-                                    <th className="font-sans text-[10px] uppercase tracking-[0.12em] text-[#888] px-4 py-3 whitespace-nowrap">Rating</th>
-                                    <th className="font-sans text-[10px] uppercase tracking-[0.12em] text-[#888] px-4 py-3 whitespace-nowrap">Tanggal</th>
-                                    <th className="font-sans text-[10px] uppercase tracking-[0.12em] text-[#888] px-4 py-3 whitespace-nowrap text-right">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {reviews.data.length === 0 ? (
-                                    <tr>
-                                        <td colSpan={5} className="px-4 py-10 text-center font-sans text-[12px] text-[#aaa]">
-                                            Belum ada ulasan
-                                        </td>
-                                    </tr>
-                                ) : (
-                                    reviews.data.map((row) => {
-                                        const isChecked = selected.has(row.id);
-                                        return (
-                                            <tr
-                                                key={row.id}
-                                                className={cn(
-                                                    "group border-b border-[#f2f2f2] last:border-0 transition-colors",
-                                                    isChecked ? "bg-[#f5f5f5]" : "hover:bg-[#fafafa]",
-                                                )}
-                                            >
-                                                <td className="w-5 pl-4 pr-0 py-3 align-middle">
-                                                    <div className="flex justify-center">
-                                                        <span
-                                                            className={cn(
-                                                                "inline-flex transition-opacity duration-200",
-                                                                isChecked
-                                                                    ? "opacity-100"
-                                                                    : "opacity-0 group-hover:opacity-100 focus-within:opacity-100",
-                                                            )}
-                                                        >
-                                                            <Checkbox
-                                                                checked={isChecked}
-                                                                onCheckedChange={(v) => toggleOne(row.id, !!v)}
-                                                                aria-label={`Pilih ulasan ${row.name}`}
-                                                            />
-                                                        </span>
-                                                    </div>
-                                                </td>
-                                                <td className="pl-4 pr-4 py-3 max-w-[420px]">
-                                                    <div className="flex gap-3 min-w-0">
-                                                        <div className="w-8 h-8 rounded-full bg-[#f0f0f0] border border-[#e6e6e6] flex items-center justify-center shrink-0 mt-0.5">
-                                                            <span className="font-sans text-[10px] font-medium tracking-[0.08em] text-[#1a1a1a]">
-                                                                {getInitials(row.name)}
-                                                            </span>
-                                                        </div>
-                                                        <div className="min-w-0 flex-1">
-                                                            <p className="font-sans text-[13px] font-medium text-[#1a1a1a] leading-none truncate">
-                                                                {row.name || "Tanpa nama"}
-                                                            </p>
-                                                            <p className="font-sans text-[12.5px] leading-[1.6] text-[#555] mt-1.5 break-words line-clamp-2">
-                                                                {row.message || "—"}
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td className="px-4 py-3 whitespace-nowrap">
-                                                    <span className="flex gap-0.5 items-center">
-                                                        {[1, 2, 3, 4, 5].map((s) => (
-                                                            <Star
-                                                                key={s}
-                                                                size={10}
-                                                                fill={s <= row.rating ? "currentColor" : "none"}
-                                                                strokeWidth={1.5}
-                                                                className={s <= row.rating ? "text-amber-400" : "text-[#e6e6e6]"}
-                                                            />
-                                                        ))}
-                                                    </span>
-                                                </td>
-                                                <td className="px-4 py-3 whitespace-nowrap font-sans text-[11px] text-[#888]">{row.date || "-"}</td>
-                                                <td className="px-4 py-3">
-                                                    <div className="flex items-center justify-end gap-1.5">
-                                                        <Button
-                                                            variant="secondary"
-                                                            size="icon"
-                                                            onClick={() => openEdit(row)}
-                                                            aria-label="Edit ulasan"
-                                                        >
-                                                            <Pencil size={14} strokeWidth={1.5} />
-                                                        </Button>
-                                                        <Button
-                                                            variant="outline"
-                                                            size="icon"
-                                                            onClick={() => onDeleteSingle(row.id)}
-                                                            aria-label="Hapus ulasan"
-                                                            className="text-[#888] hover:border-red-400 hover:text-red-500"
-                                                        >
-                                                            <Trash2 size={14} strokeWidth={1.5} />
-                                                        </Button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        );
-                                    })
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
-                    {reviews.last_page > 1 ? (
-                        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-[#e6e6e6] bg-[#fafafa]/50 px-4 py-3">
-                            <span className="font-sans text-[11px] text-[#888]">
-                                Hal {reviews.current_page} dari {reviews.last_page} · {reviews.total} ulasan
-                            </span>
-                            <div className="flex items-center gap-1 flex-wrap justify-center">
-                                {reviews.links.map((link, i) => {
-                                    const isPrev = link.label.includes("Previous") || link.label.includes("&laquo;");
-                                    const isNext = link.label.includes("Next") || link.label.includes("&raquo;");
-                                    const label = isPrev ? "Prev" : isNext ? "Next" : link.label.replace(/&[^;]+;/g, "").trim();
-                                    return (
-                                        <Link
-                                            key={i}
-                                            href={link.url ?? "#"}
-                                            preserveState
-                                            preserveScroll
-                                            className={cn(
-                                                "min-w-[36px] h-8 px-3 inline-flex items-center justify-center rounded-full font-sans text-[12px] border transition-colors duration-200",
-                                                link.active
-                                                    ? "bg-[#1a1a1a] text-white border-[#1a1a1a]"
-                                                    : "bg-white text-[#666] border-[#e6e6e6] hover:border-[#1a1a1a] hover:text-[#1a1a1a]",
-                                                !link.url && "opacity-40 pointer-events-none",
-                                            )}
-                                        >
-                                            <span dangerouslySetInnerHTML={{ __html: label }} />
-                                        </Link>
-                                    );
-                                })}
-                            </div>
-                        </div>
-                    ) : (
-                        <div className="flex items-center justify-between border-t border-[#e6e6e6] bg-[#fafafa]/50 px-4 py-3">
-                            <span className="font-sans text-[11px] text-[#888]">{reviews.total} ulasan · Hal 1 dari 1</span>
-                            <span className="font-sans text-[11px] text-[#aaa]">—</span>
-                        </div>
-                    )}
-                </div>
+                                        <div className="min-w-0 flex-1">
+                                            <p className="font-sans text-[13px] font-medium text-[#1a1a1a] leading-none truncate">{r.name || 'Tanpa nama'}</p>
+                                            <p className="font-sans text-[12.5px] leading-[1.6] text-[#555] mt-1.5 break-words line-clamp-2">{r.message || '—'}</p>
+                                        </div>
+                                    </div>
+                                );
+                            },
+                        },
+                        {
+                            key: 'rating',
+                            header: 'Rating',
+                            render: (_v, row) => {
+                                const r = row as ReviewRow;
+                                return (
+                                    <span className="flex gap-0.5 items-center">
+                                        {[1, 2, 3, 4, 5].map((s) => (
+                                            <Star key={s} size={10} fill={s <= r.rating ? 'currentColor' : 'none'} strokeWidth={1.5} className={s <= r.rating ? 'text-amber-400' : 'text-[#e6e6e6]'} />
+                                        ))}
+                                    </span>
+                                );
+                            },
+                        },
+                        {
+                            key: 'date',
+                            header: 'Tanggal',
+                            cellClassName: 'whitespace-nowrap font-sans text-[11px] text-[#888]',
+                            render: (_v, row) => (row as ReviewRow).date || '-',
+                        },
+                        {
+                            key: 'actions',
+                            header: 'Aksi',
+                            headerClassName: 'text-right',
+                            cellClassName: 'text-right',
+                            render: (_v, row) => {
+                                const r = row as ReviewRow;
+                                return (
+                                    <div className="flex items-center justify-end gap-1.5">
+                                        <Button variant="secondary" size="icon" onClick={() => openEdit(r)} aria-label="Edit ulasan">
+                                            <Pencil size={14} strokeWidth={1.5} />
+                                        </Button>
+                                        <Button variant="outline" size="icon" onClick={() => onDeleteSingle(r.id)} aria-label="Hapus ulasan" className="text-[#888] hover:border-red-400 hover:text-red-500">
+                                            <Trash2 size={14} strokeWidth={1.5} />
+                                        </Button>
+                                    </div>
+                                );
+                            },
+                        },
+                    ]}
+                    data={reviews.data as unknown as (ReviewRow & Record<string, unknown>)[]}
+                    rowKey={(row) => (row as ReviewRow).id}
+                    getRowClassName={(row) => {
+                        const r = row as ReviewRow;
+                        const isChecked = selected.has(r.id);
+                        return isChecked ? 'bg-[#f5f5f5]' : '';
+                    }}
+                    emptyText="Belum ada ulasan"
+                    pagination={{ links: reviews.links, current_page: reviews.current_page, last_page: reviews.last_page, total: reviews.total }}
+                    paginationMetaText={reviews.last_page > 1 ? `Hal ${reviews.current_page} dari ${reviews.last_page} · ${reviews.total} ulasan` : `${reviews.total} ulasan · Hal 1 dari 1`}
+                />
             </div>
 
             {/* Sidebar — reusable */}

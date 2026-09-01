@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Product;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -23,29 +24,29 @@ class StoreProductRequest extends FormRequest
             'tagline' => ['nullable', 'string', 'max:200'],
             'description' => ['nullable', 'string'],
             'gender' => ['required', Rule::in(['Pria', 'Wanita', 'Unisex'])],
-            'price' => ['required', 'integer', 'min:0'],
-            'stock' => ['nullable', 'integer', 'min:0'],
-            'category' => ['required', Rule::in(['EDP'])],
-            'type' => ['required', Rule::in(['signature', 'inspired'])],
-            'size_label' => ['nullable', 'string', 'max:120'],
+            'category' => ['required', 'string', Rule::exists('categories', 'slug')->where('is_active', true)],
+            'type' => ['required', 'string', Rule::exists('product_types', 'slug')->where('is_active', true)],
             'is_active' => ['sometimes', 'boolean'],
+            'is_featured' => ['sometimes', 'boolean'],
 
             'images' => ['nullable', 'array', 'max:6'],
             'images.*.path' => ['nullable', 'string', 'max:255'],
-            'images.*.file' => ['nullable', 'image', 'max:2048'],
+            'images.*.type' => ['nullable', 'string', Rule::in(['image', 'video'])],
+            'images.*.file' => ['nullable', 'file', 'max:102400', 'mimes:jpeg,jpg,png,webp,mp4,webm,mov,quicktime'],
             'images.*.position' => ['nullable', 'integer', 'min:0'],
 
-            'options' => ['nullable', 'array', 'max:10'],
+            'options' => ['required', 'array', 'min:1', 'max:10'],
             'options.*.key' => ['required', 'string', 'max:50', 'regex:/^[a-z0-9_-]+$/'],
             'options.*.label' => ['required', 'string', 'max:120'],
             'options.*.mode' => ['required', Rule::in(['dropdown', 'normal'])],
             'options.*.is_required' => ['sometimes', 'boolean'],
             'options.*.required' => ['sometimes', 'boolean'],
+            'options.*.is_base' => ['sometimes', 'boolean'],
             'options.*.position' => ['nullable', 'integer', 'min:0'],
-            'options.*.choices' => ['nullable', 'array', 'max:30'],
+            'options.*.choices' => ['required', 'array', 'min:1', 'max:30'],
             'options.*.choices.*.key' => ['required', 'string', 'max:100', 'regex:/^[a-z0-9_-]+$/'],
             'options.*.choices.*.name' => ['required', 'string', 'max:120'],
-            'options.*.choices.*.price' => ['nullable', 'integer', 'min:0'],
+            'options.*.choices.*.price' => ['required', 'integer', 'min:0'],
             'options.*.choices.*.stock' => ['required', 'integer', 'min:0'],
             'options.*.choices.*.position' => ['nullable', 'integer', 'min:0'],
 
@@ -58,6 +59,48 @@ class StoreProductRequest extends FormRequest
         ];
     }
 
+    public function withValidator($validator): void
+    {
+        $validator->after(function ($validator) {
+            $options = $this->input('options', []);
+            if (! is_array($options) || empty($options)) {
+                return;
+            }
+            $baseCount = collect($options)->filter(fn ($o) => ! empty($o['is_base']))->count();
+            if ($baseCount !== 1) {
+                $validator->errors()->add('options', 'Harus ada tepat 1 varian dasar (is_base).');
+            }
+            $base = collect($options)->firstWhere('is_base', true);
+            if ($base && empty($base['is_required']) && empty($base['required'])) {
+                // is_base must be required, but allow explicit true
+                // This is informational; FE should enforce.
+            }
+
+            // limit featured to 6
+            if (! empty($this->input('is_featured'))) {
+                if (Product::where('is_featured', true)->count() >= 6) {
+                    $validator->errors()->add('is_featured', 'Maksimal 6 produk featured sudah tercapai.');
+                }
+            }
+
+            // validate image vs video size per file
+            $images = $this->input('images', []);
+            if (is_array($images)) {
+                foreach ($images as $idx => $img) {
+                    $fileKey = "images.{$idx}.file";
+                    if ($this->hasFile($fileKey)) {
+                        $file = $this->file($fileKey);
+                        $isVideo = str_starts_with($file->getMimeType() ?? '', 'video/');
+                        $max = $isVideo ? 100 * 1024 : 2 * 1024;
+                        if ($file->getSize() > $max * 1024) {
+                            $validator->errors()->add("images.{$idx}.file", $isVideo ? 'Maksimal 100MB per video.' : 'Maksimal 2MB per foto.');
+                        }
+                    }
+                }
+            }
+        });
+    }
+
     /**
      * @return array<string, string>
      */
@@ -65,9 +108,13 @@ class StoreProductRequest extends FormRequest
     {
         return [
             'name.required' => 'Nama produk wajib diisi.',
-            'price.required' => 'Harga wajib diisi.',
-            'images.max' => 'Maksimal 6 foto.',
-            'images.*.file.max' => 'Maksimal 2MB per foto.',
+            'options.required' => 'Minimal 1 varian wajib diisi.',
+            'options.min' => 'Minimal 1 varian.',
+            'options.*.choices.required' => 'Tiap varian harus punya minimal 1 pilihan.',
+            'options.*.choices.min' => 'Minimal 1 pilihan per varian.',
+            'images.max' => 'Maksimal 6 media (foto + video).',
+            'images.*.file.max' => 'Maksimal 100MB per file.',
+            'images.*.file.mimes' => 'Format harus jpg, png, webp, mp4, webm, mov.',
         ];
     }
 }

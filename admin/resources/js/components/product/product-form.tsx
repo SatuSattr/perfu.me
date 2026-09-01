@@ -26,23 +26,23 @@ interface ProductPayload {
     tagline: string | null;
     description: string | null;
     gender: string;
-    price: number;
-    stock: number | null;
     category: string;
     type: string;
     image: string | null;
     detailImage: string | null;
     images: string[];
-    sizeLabel: string | null;
+    media?: { path: string; type: string; mime?: string | null }[];
     is_active?: boolean;
+    is_featured?: boolean;
     options: {
         id: string;
         name: string;
         label: string;
         mode: 'dropdown' | 'normal';
         required: boolean;
+        is_base: boolean;
         position: number;
-        choices: { id: string; name: string; price: number | null; stock: number }[];
+        choices: { id: string; name: string; price: number; stock: number }[];
     }[];
     reviews: { name: string; rating: number; date: string; message: string }[];
 }
@@ -50,6 +50,7 @@ interface ProductPayload {
 interface Props {
     initialData?: ProductPayload;
     enums: Enums;
+    featuredCount?: number;
     isEdit?: boolean;
     className?: string;
 }
@@ -64,22 +65,41 @@ function slugify(s: string): string {
         .replace(/^-|-$/g, '');
 }
 
-export function ProductForm({ initialData, enums, isEdit = false, className = '' }: Props) {
+export function ProductForm({ initialData, enums, featuredCount = 0, isEdit = false, className = '' }: Props) {
     const initialImages: MediaItem[] = useMemo(() => {
+        const media = (initialData as unknown as { media?: { path: string; type: string }[] })?.media;
+        if (media?.length) {
+            return media.map((m, idx) => ({ path: m.path, preview: m.path, file: null, position: idx, type: m.type === 'video' ? 'video' : 'image', mime: null } as MediaItem));
+        }
         if (!initialData?.images?.length) return [];
-        return initialData.images.map((path, idx) => ({ path, preview: path, file: null, position: idx }));
+        return initialData.images.map((path, idx) => ({ path, preview: path, file: null, position: idx, type: (path && /\.(mp4|webm|mov)$/i.test(path) ? 'video' : 'image') as 'image' | 'video' }));
     }, [initialData]);
 
     const initialOptions: OptionItem[] = useMemo(() => {
-        if (!initialData?.options) return [];
-        return initialData.options.map((o, idx) => ({
+        if (!initialData?.options || initialData.options.length === 0) {
+            // Auto-create base variant for new products (Option B pure)
+            return [
+                {
+                    key: 'ukuran',
+                    label: 'Ukuran',
+                    mode: 'normal' as const,
+                    required: true,
+                    is_base: true,
+                    position: 0,
+                    choices: [{ key: '', name: '', price: 0 as unknown as number, stock: 0, position: 0 }],
+                },
+            ];
+        }
+        const mapped = initialData.options.map((o, idx) => ({
             key: o.id,
             label: o.label,
             mode: o.mode,
             required: o.required,
+            is_base: (o as unknown as { is_base?: boolean }).is_base ?? false,
             position: o.position ?? idx,
             choices: o.choices.map((c, ci) => ({ key: c.id, name: c.name, price: c.price, stock: c.stock, position: ci })),
         }));
+        return [...mapped].sort((a, b) => Number(b.is_base) - Number(a.is_base)).map((o, i) => ({ ...o, position: i }));
     }, [initialData]);
 
     const form = useForm({
@@ -88,12 +108,10 @@ export function ProductForm({ initialData, enums, isEdit = false, className = ''
         tagline: initialData?.tagline ?? '',
         description: initialData?.description ?? '',
         gender: initialData?.gender ?? 'Pria',
-        price: initialData?.price ?? 0,
-        stock: (initialData?.stock as unknown as string) ?? '',
         category: initialData?.category ?? 'EDP',
         type: (initialData?.type as 'signature' | 'inspired') ?? 'signature',
-        size_label: initialData?.sizeLabel ?? '',
         is_active: initialData?.is_active ?? true,
+        is_featured: (initialData?.is_featured as unknown as boolean) ?? false,
         images: initialImages,
         options: initialOptions,
     });
@@ -101,7 +119,6 @@ export function ProductForm({ initialData, enums, isEdit = false, className = ''
     const autoSlug = useMemo(() => slugify(form.data.name), [form.data.name]);
     useEffect(() => {
         if (!isEdit && form.data.name && !form.data.slug) {
-            // only auto-fill if slug empty
             form.setData('slug', autoSlug);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -115,6 +132,7 @@ export function ProductForm({ initialData, enums, isEdit = false, className = ''
                 path: img.path,
                 preview: img.preview ?? img.path,
                 hasFile: !!img.file,
+                type: (img as unknown as { type?: string }).type ?? 'image',
                 position: img.position ?? i,
             }));
         const normOptions = (opts: OptionItem[]) =>
@@ -123,11 +141,12 @@ export function ProductForm({ initialData, enums, isEdit = false, className = ''
                 label: o.label,
                 mode: o.mode,
                 required: !!o.required,
+                is_base: !!o.is_base,
                 position: o.position ?? i,
                 choices: o.choices.map((c, ci) => ({
                     key: c.key,
                     name: c.name,
-                    price: c.price === '' || c.price === null || c.price === undefined ? null : Number(c.price),
+                    price: Number(c.price),
                     stock: Number(c.stock),
                     position: c.position ?? ci,
                 })),
@@ -138,17 +157,10 @@ export function ProductForm({ initialData, enums, isEdit = false, className = ''
             tagline: initialData.tagline ?? '',
             description: initialData.description ?? '',
             gender: initialData.gender ?? '',
-            price: Number(initialData.price ?? 0),
-            stock:
-                initialData.stock === null ||
-                initialData.stock === undefined ||
-                (initialData.stock as unknown as string) === ''
-                    ? null
-                    : Number(initialData.stock),
             category: initialData.category ?? '',
             type: initialData.type ?? '',
-            size_label: initialData.sizeLabel ?? '',
             is_active: !!initialData.is_active,
+            is_featured: !!initialData.is_featured,
             images: normImages(initialImages),
             options: normOptions(initialOptions),
         };
@@ -158,17 +170,10 @@ export function ProductForm({ initialData, enums, isEdit = false, className = ''
             tagline: form.data.tagline ?? '',
             description: form.data.description ?? '',
             gender: form.data.gender ?? '',
-            price: Number((form.data.price as unknown as number) ?? 0),
-            stock:
-                (form.data.stock as unknown as string) === '' ||
-                form.data.stock === null ||
-                form.data.stock === undefined
-                    ? null
-                    : Number(form.data.stock),
             category: form.data.category ?? '',
             type: form.data.type ?? '',
-            size_label: (form.data.size_label as unknown as string) ?? '',
             is_active: !!form.data.is_active,
+            is_featured: !!(form.data as unknown as { is_featured?: boolean }).is_featured,
             images: normImages(form.data.images as unknown as MediaItem[]),
             options: normOptions(form.data.options as unknown as OptionItem[]),
         };
@@ -176,7 +181,6 @@ export function ProductForm({ initialData, enums, isEdit = false, className = ''
     }, [isEdit, initialData, initialImages, initialOptions, form.data]);
 
     function handleReset() {
-        // revoke blob URLs for files that will be discarded
         (form.data.images as unknown as MediaItem[]).forEach((img) => {
             if (img.file && img.preview) {
                 try {
@@ -190,12 +194,10 @@ export function ProductForm({ initialData, enums, isEdit = false, className = ''
             tagline: initialData?.tagline ?? '',
             description: initialData?.description ?? '',
             gender: initialData?.gender ?? 'Pria',
-            price: initialData?.price ?? 0,
-            stock: (initialData?.stock as unknown as string) ?? '',
             category: initialData?.category ?? 'EDP',
             type: (initialData?.type as unknown as string) ?? 'signature',
-            size_label: initialData?.sizeLabel ?? '',
             is_active: initialData?.is_active ?? true,
+            is_featured: (initialData?.is_featured as unknown as boolean) ?? false,
             images: initialImages as unknown as typeof form.data.images,
             options: initialOptions as unknown as typeof form.data.options,
         } as unknown as typeof form.data);
@@ -208,30 +210,30 @@ export function ProductForm({ initialData, enums, isEdit = false, className = ''
         const url = isEdit ? `/products/${initialData?.slug}` : '/products';
         const method = isEdit ? 'put' : 'post';
 
-        form.transform((data) => ({
-            ...data,
-            slug: data.slug || autoSlug,
-            price: Number(data.price),
-            stock: data.stock === '' || (data.stock as unknown) === null ? null : Number(data.stock),
-            tagline: data.tagline || null,
-            description: data.description || null,
-            size_label: data.size_label || null,
-            // normalize options positions
-            options: data.options.map((o, idx) => ({
-                key: o.key,
-                label: o.label,
-                mode: o.mode,
-                required: o.required,
-                position: idx,
-                choices: o.choices.map((c, ci) => ({
-                    key: c.key,
-                    name: c.name,
-                    price: c.price === '' || c.price === null ? null : Number(c.price),
-                    stock: Number(c.stock),
-                    position: ci,
+        form.transform((data) => {
+            const sorted = [...data.options].sort((a, b) => Number(b.is_base) - Number(a.is_base));
+            return {
+                ...data,
+                slug: data.slug || autoSlug,
+                tagline: data.tagline || null,
+                description: data.description || null,
+                options: sorted.map((o, idx) => ({
+                    key: o.key,
+                    label: o.label,
+                    mode: o.mode,
+                    required: o.required,
+                    is_base: !!o.is_base,
+                    position: idx,
+                    choices: o.choices.map((c, ci) => ({
+                        key: c.key,
+                        name: c.name,
+                        price: Number(c.price),
+                        stock: Number(c.stock),
+                        position: ci,
+                    })),
                 })),
-            })),
-        }));
+            };
+        });
 
         if (method === 'put') {
             form.put(url, {
@@ -250,7 +252,6 @@ export function ProductForm({ initialData, enums, isEdit = false, className = ''
 
     const showCapsule = !isEdit;
 
-    // For edit mode, per-panel saves; keep currentSlug for async media/options after slug change
     const [currentSlug, setCurrentSlug] = React.useState(initialData?.slug ?? '');
 
     React.useEffect(() => {
@@ -270,26 +271,41 @@ export function ProductForm({ initialData, enums, isEdit = false, className = ''
                             <Combobox label="Gender *" placeholder="Pilih gender" value={form.data.gender ? { code: form.data.gender, name: form.data.gender } : null} onSelect={(opt) => form.setData('gender', opt.code)} options={enums.genders.map((g) => ({ code: g, name: g }))} error={(form.errors as unknown as Record<string, string>).gender} typeable={false} />
                             <Combobox label="Tipe *" placeholder="Pilih tipe" value={form.data.type ? { code: form.data.type, name: form.data.type } : null} onSelect={(opt) => form.setData('type', opt.code as FormData['type'])} options={enums.types.map((t) => ({ code: t, name: t }))} error={(form.errors as unknown as Record<string, string>).type} typeable={false} />
                         </div>
-                        <div className="grid grid-cols-2 gap-3">
-                            <Combobox label="Kategori *" placeholder="Pilih kategori" value={form.data.category ? { code: form.data.category, name: form.data.category } : null} onSelect={(opt) => form.setData('category', opt.code)} options={enums.categories.map((c) => ({ code: c, name: c }))} error={(form.errors as unknown as Record<string, string>).category} typeable={false} />
-                            <Input label="Label Ukuran" value={form.data.size_label} onChange={(e) => form.setData('size_label', e.target.value)} placeholder="15ml, 35ml, 50ml" />
-                        </div>
-                        <div className="grid grid-cols-2 gap-3">
-                            <Input label="Harga Dasar *" type="number" value={String(form.data.price)} onChange={(e) => form.setData('price', Number(e.target.value))} error={(form.errors as unknown as Record<string, string>).price} placeholder="45000" required />
-                            <Input label={form.data.type === 'inspired' ? 'Stok (kosong = di varian)' : 'Stok *'} type="number" value={form.data.stock as string} onChange={(e) => form.setData('stock', e.target.value as unknown as number)} error={(form.errors as unknown as Record<string, string>).stock} placeholder={form.data.type === 'inspired' ? 'Kosongkan' : '30'} disabled={form.data.type === 'inspired' && form.data.options.length > 0} />
-                        </div>
+                        <Combobox label="Kategori *" placeholder="Pilih kategori" value={form.data.category ? { code: form.data.category, name: form.data.category } : null} onSelect={(opt) => form.setData('category', opt.code)} options={enums.categories.map((c) => ({ code: c, name: c }))} error={(form.errors as unknown as Record<string, string>).category} typeable={false} />
                         <div className="lg:col-span-2">
                             <TextArea label="Deskripsi" value={form.data.description} onChange={(e) => form.setData('description', e.target.value)} placeholder="Aroma fresh, sporty..." rows={3} error={(form.errors as unknown as Record<string, string>).description} />
                         </div>
-                        <div className="lg:col-span-2 pt-1">
-                            <Checkbox label="Aktif" description="tampil di store jika aktif" checked={form.data.is_active} onCheckedChange={(v) => form.setData('is_active', v)} labelClassName="font-medium" />
-                        </div>
+                        {(() => {
+                            const createLimitReached = !(form.data as unknown as { is_featured: boolean }).is_featured && (featuredCount ?? 0) >= 6;
+                            return (
+                                <div className="lg:col-span-2 flex flex-col gap-1">
+                                    <div className="flex items-center gap-6 pt-1">
+                                        <Checkbox label="Aktif" description="tampil di store jika aktif" checked={form.data.is_active} onCheckedChange={(v) => form.setData('is_active', v)} labelClassName="font-medium" />
+                                        <Checkbox
+                                            label="Featured"
+                                            description={createLimitReached ? 'Sudah mencapai batas (6/6)' : 'tampil di landing max 6'}
+                                            checked={(form.data as unknown as { is_featured: boolean }).is_featured}
+                                            disabled={createLimitReached}
+                                            onCheckedChange={(v) => form.setData('is_featured' as never, v as never)}
+                                            labelClassName="font-medium"
+                                            error={(form.errors as unknown as Record<string, string>).is_featured}
+                                        />
+                                    </div>
+                                    {createLimitReached && !(form.errors as unknown as Record<string, string>).is_featured && (
+                                        <p className="font-sans text-[11px] text-[#888] ml-[26px]">Nonaktifkan salah satu produk featured untuk menambah yang baru.</p>
+                                    )}
+                                </div>
+                            );
+                        })()}
                     </div>
                 </div>
                 <MediaSection images={form.data.images} onChange={(next) => form.setData('images', next)} error={(form.errors as unknown as Record<string, string>)['images.0.file']} className="h-full flex flex-col" />
             </div>
 
             <VariantsSection options={form.data.options as unknown as OptionItem[]} onChange={(next) => form.setData('options', next as unknown as typeof form.data.options)} type={form.data.type as 'signature' | 'inspired'} />
+            {(form.errors as unknown as Record<string, string>).options && (
+                <p className="font-sans text-[11px] text-red-500" role="alert">{(form.errors as unknown as Record<string, string>).options}</p>
+            )}
         </>
     );
 
@@ -301,17 +317,15 @@ export function ProductForm({ initialData, enums, isEdit = false, className = ''
             tagline: initialData.tagline ?? '',
             description: initialData.description ?? '',
             gender: initialData.gender ?? 'Pria',
-            price: initialData.price ?? 0,
-            stock: (initialData.stock as unknown as string) ?? '',
             category: initialData.category ?? 'EDP',
             type: (initialData.type as unknown as string) ?? 'signature',
-            size_label: initialData.sizeLabel ?? '',
             is_active: initialData.is_active ?? true,
+            is_featured: (initialData.is_featured as unknown as boolean) ?? false,
         } as unknown as React.ComponentProps<typeof InfoPanel>['initial'];
         return (
             <>
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
-                    <InfoPanel productSlug={currentSlug} initial={infoInitial} enums={enums} onSlugChange={setCurrentSlug} className="h-full" />
+                    <InfoPanel productSlug={currentSlug} initial={infoInitial} enums={enums} featuredCount={featuredCount} onSlugChange={setCurrentSlug} className="h-full" />
                     <MediaSection productSlug={currentSlug} autoSave images={form.data.images} onChange={(next) => form.setData('images', next)} error={(form.errors as unknown as Record<string, string>)['images.0.file']} className="h-full flex flex-col" />
                 </div>
 

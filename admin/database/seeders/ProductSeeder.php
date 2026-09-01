@@ -2,10 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Enums\ProductCategory;
 use App\Enums\ProductGender;
 use App\Enums\ProductOptionMode;
-use App\Enums\ProductType;
 use App\Models\Product;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;
@@ -36,19 +34,19 @@ class ProductSeeder extends Seeder
                 'tagline' => $data['tagline'],
                 'description' => $data['description'],
                 'gender' => ProductGender::from($data['gender']),
-                'price' => $data['price'],
-                'stock' => $data['stock'],
-                'category' => ProductCategory::from($data['category']),
-                'type' => ProductType::from($data['type']),
+                'category' => strtolower($data['category']),
+                'type' => $data['type'],
                 'image' => $data['image'],
                 'detail_image' => $data['detailImage'] ?? null,
-                'size_label' => $data['sizeLabel'],
                 'is_active' => true,
+                'is_featured' => true,
             ]);
 
             foreach ($data['images'] as $index => $path) {
                 $product->images()->create([
                     'path' => $path,
+                    'type' => 'image',
+                    'mime' => 'image/png',
                     'position' => $index,
                 ]);
             }
@@ -59,6 +57,7 @@ class ProductSeeder extends Seeder
                     'label' => $option['label'],
                     'mode' => ProductOptionMode::from($option['mode']),
                     'is_required' => $option['required'],
+                    'is_base' => $option['is_base'] ?? false,
                     'position' => $option['position'],
                 ]);
 
@@ -66,7 +65,7 @@ class ProductSeeder extends Seeder
                     $productOption->choices()->create([
                         'key' => $choice['id'],
                         'name' => $choice['name'],
-                        'price' => $choice['price'],
+                        'price' => $choice['price'] ?? 0,
                         'stock' => $choice['stock'],
                         'position' => $choiceIndex,
                         'is_active' => true,
@@ -108,18 +107,28 @@ class ProductSeeder extends Seeder
                 'tagline' => 'Fresh. Bold. Confident.',
                 'description' => 'Aroma fresh, sporty, dan clean dengan sentuhan hangat yang memberikan kesan maskulin, energik, dan percaya diri. Cocok digunakan untuk aktivitas sehari-hari.',
                 'gender' => 'Pria',
-                'price' => 45000,
-                'stock' => 30,
                 'category' => 'EDP',
                 'type' => 'signature',
-                'image' => '/assets/products/dynamyst-transparent.png',
-                'detailImage' => '/assets/products/dynamyst-detail.png',
+                'image' => '/storage/products/dynamyst-transparent.png',
+                'detailImage' => '/storage/products/dynamyst-detail.png',
                 'images' => [
-                    '/assets/products/dynamyst-transparent.png',
-                    '/assets/products/dynamyst-detail.png',
+                    '/storage/products/dynamyst-transparent.png',
+                    '/storage/products/dynamyst-detail.png',
                 ],
-                'sizeLabel' => null,
-                'options' => [],
+                'options' => [
+                    [
+                        'id' => 'ukuran',
+                        'name' => 'ukuran',
+                        'label' => 'Ukuran',
+                        'mode' => 'normal',
+                        'required' => true,
+                        'is_base' => true,
+                        'position' => 0,
+                        'choices' => [
+                            ['id' => '50ml', 'name' => '50ml', 'price' => 45000, 'stock' => 30],
+                        ],
+                    ],
+                ],
                 'reviews' => [
                     ['name' => 'Rafi A.', 'rating' => 5, 'date' => '18 Aug 2026', 'message' => 'Aromanya fresh banget, tahan lama juga. Udah beli 3 kali!'],
                     ['name' => 'Budi S.', 'rating' => 4, 'date' => '10 Aug 2026', 'message' => 'Packaging rapi, aroma sesuai deskripsi. Akan repeat order.'],
@@ -135,18 +144,28 @@ class ProductSeeder extends Seeder
                 'tagline' => 'Soft. Warm. Timeless.',
                 'description' => 'Aroma vanilla yang lembut, creamy, dan elegan dengan nuansa hangat yang menenangkan. Cocok untuk penggunaan sehari-hari maupun momen spesial.',
                 'gender' => 'Wanita',
-                'price' => 45000,
-                'stock' => 25,
                 'category' => 'EDP',
                 'type' => 'signature',
-                'image' => '/assets/products/vennesence-transparent.png',
-                'detailImage' => '/assets/products/vennesence-detail.png',
+                'image' => '/storage/products/vennesence-transparent.png',
+                'detailImage' => '/storage/products/vennesence-detail.png',
                 'images' => [
-                    '/assets/products/vennesence-transparent.png',
-                    '/assets/products/vennesence-detail.png',
+                    '/storage/products/vennesence-transparent.png',
+                    '/storage/products/vennesence-detail.png',
                 ],
-                'sizeLabel' => null,
-                'options' => [],
+                'options' => [
+                    [
+                        'id' => 'ukuran',
+                        'name' => 'ukuran',
+                        'label' => 'Ukuran',
+                        'mode' => 'normal',
+                        'required' => true,
+                        'is_base' => true,
+                        'position' => 0,
+                        'choices' => [
+                            ['id' => '50ml', 'name' => '50ml', 'price' => 45000, 'stock' => 25],
+                        ],
+                    ],
+                ],
                 'reviews' => [
                     ['name' => 'Dewi L.', 'rating' => 4, 'date' => '19 Aug 2026', 'message' => 'Soft dan menenangkan, cocok banget dipakai malam hari.'],
                     ['name' => 'Ayu R.', 'rating' => 5, 'date' => '06 Aug 2026', 'message' => 'Tahan lebih dari 8 jam di kulit saya. Luar biasa buat harga segini.'],
@@ -161,14 +180,11 @@ class ProductSeeder extends Seeder
                 'tagline' => 'Wangi kelas dunia, harga terjangkau.',
                 'description' => 'Lebih dari 40 pilihan aroma terinspirasi dari parfum-parfum mewah kelas dunia. Karakter yang sama, harga yang jauh lebih bersahabat.',
                 'gender' => 'Unisex',
-                'price' => 20000,
-                'stock' => null,
                 'category' => 'EDP',
                 'type' => 'inspired',
-                'image' => '/assets/products/refill-transparent.png',
+                'image' => '/storage/products/refill-transparent.png',
                 'detailImage' => null,
-                'images' => ['/assets/products/refill-transparent.png'],
-                'sizeLabel' => '15ml, 35ml, 50ml',
+                'images' => ['/storage/products/refill-transparent.png'],
                 'options' => [
                     [
                         'id' => 'aroma',
@@ -176,18 +192,19 @@ class ProductSeeder extends Seeder
                         'label' => 'Pilih Aroma',
                         'mode' => 'dropdown',
                         'required' => true,
+                        'is_base' => false,
                         'position' => 0,
                         'choices' => [
-                            ['id' => 'creed-aventus', 'name' => 'Creed Aventus', 'price' => null, 'stock' => 18],
-                            ['id' => 'baccarat-rouge-540', 'name' => 'Baccarat Rouge 540', 'price' => null, 'stock' => 12],
-                            ['id' => 'ysl-black-opium', 'name' => 'YSL Black Opium', 'price' => null, 'stock' => 20],
-                            ['id' => 'dior-sauvage', 'name' => 'Dior Sauvage', 'price' => null, 'stock' => 25],
-                            ['id' => 'versace-eros', 'name' => 'Versace Eros', 'price' => null, 'stock' => 15],
-                            ['id' => 'miss-dior-blooming', 'name' => 'Miss Dior Blooming Bouquet', 'price' => null, 'stock' => 0],
-                            ['id' => 'chanel-chance', 'name' => 'Chanel Chance', 'price' => null, 'stock' => 10],
-                            ['id' => 'tom-ford-black-orchid', 'name' => 'Tom Ford Black Orchid', 'price' => null, 'stock' => 8],
-                            ['id' => 'armani-acqua-di-gio', 'name' => 'Armani Acqua di Gio', 'price' => null, 'stock' => 22],
-                            ['id' => 'jo-malone-peony-blush', 'name' => 'Jo Malone Peony & Blush Suede', 'price' => null, 'stock' => 6],
+                            ['id' => 'creed-aventus', 'name' => 'Creed Aventus', 'price' => 0, 'stock' => 18],
+                            ['id' => 'baccarat-rouge-540', 'name' => 'Baccarat Rouge 540', 'price' => 2000, 'stock' => 12],
+                            ['id' => 'ysl-black-opium', 'name' => 'YSL Black Opium', 'price' => 3500, 'stock' => 20],
+                            ['id' => 'dior-sauvage', 'name' => 'Dior Sauvage', 'price' => 1500, 'stock' => 25],
+                            ['id' => 'versace-eros', 'name' => 'Versace Eros', 'price' => 3000, 'stock' => 15],
+                            ['id' => 'miss-dior-blooming', 'name' => 'Miss Dior Blooming Bouquet', 'price' => 4000, 'stock' => 0],
+                            ['id' => 'chanel-chance', 'name' => 'Chanel Chance', 'price' => 1000, 'stock' => 10],
+                            ['id' => 'tom-ford-black-orchid', 'name' => 'Tom Ford Black Orchid', 'price' => 2500, 'stock' => 8],
+                            ['id' => 'armani-acqua-di-gio', 'name' => 'Armani Acqua di Gio', 'price' => 2000, 'stock' => 22],
+                            ['id' => 'jo-malone-peony-blush', 'name' => 'Jo Malone Peony & Blush Suede', 'price' => 3500, 'stock' => 6],
                         ],
                     ],
                     [
@@ -196,6 +213,7 @@ class ProductSeeder extends Seeder
                         'label' => 'Pilih Ukuran',
                         'mode' => 'normal',
                         'required' => true,
+                        'is_base' => true,
                         'position' => 1,
                         'choices' => [
                             ['id' => '15ml', 'name' => '15ml', 'price' => 20000, 'stock' => 50],

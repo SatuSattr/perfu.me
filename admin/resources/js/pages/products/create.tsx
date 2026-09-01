@@ -11,13 +11,14 @@ interface Enums {
 
 interface Props {
     enums: Enums;
+    featuredCount: number;
 }
 
-export default function Create({ enums }: Props) {
+export default function Create({ enums, featuredCount }: Props) {
     return (
         <AppLayout>
             <Head title="Tambah Produk — Perfu.me Admin" />
-            <ProductForm enums={enums} />
+            <ProductForm enums={enums} featuredCount={featuredCount} />
         </AppLayout>
     );
 }

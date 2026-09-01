@@ -1,7 +1,9 @@
 <?php
 
 use App\Models\Admin;
+use App\Models\Category;
 use App\Models\Product;
+use App\Models\ProductType;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
 
@@ -14,6 +16,8 @@ test('admin can list products', function () {
 
 test('admin can create product with images and options ordered', function () {
     Storage::fake('public');
+    Category::firstOrCreate(['slug' => 'edp'], ['name' => 'EDP', 'position' => 0, 'is_active' => true]);
+    ProductType::firstOrCreate(['slug' => 'inspired'], ['name' => 'Inspired', 'position' => 0, 'is_active' => true]);
     $admin = Admin::factory()->create();
 
     $response = $this->actingAs($admin, 'admin')->post(route('products.store'), [
@@ -22,11 +26,8 @@ test('admin can create product with images and options ordered', function () {
         'tagline' => 'Tagline',
         'description' => 'Desc',
         'gender' => 'Unisex',
-        'price' => 30000,
-        'stock' => null,
-        'category' => 'EDP',
+        'category' => 'edp',
         'type' => 'inspired',
-        'size_label' => '15ml, 35ml',
         'is_active' => true,
         'images' => [
             ['path' => '/assets/products/dynamyst-transparent.png', 'position' => 0],
@@ -38,10 +39,11 @@ test('admin can create product with images and options ordered', function () {
                 'label' => 'Pilih Aroma',
                 'mode' => 'dropdown',
                 'required' => true,
+                'is_base' => false,
                 'position' => 1,
                 'choices' => [
-                    ['key' => 'creed-aventus', 'name' => 'Creed Aventus', 'price' => null, 'stock' => 10, 'position' => 0],
-                    ['key' => 'dior-sauvage', 'name' => 'Dior Sauvage', 'price' => null, 'stock' => 5, 'position' => 1],
+                    ['key' => 'creed-aventus', 'name' => 'Creed Aventus', 'price' => 0, 'stock' => 10, 'position' => 0],
+                    ['key' => 'dior-sauvage', 'name' => 'Dior Sauvage', 'price' => 5000, 'stock' => 5, 'position' => 1],
                 ],
             ],
             [
@@ -49,6 +51,7 @@ test('admin can create product with images and options ordered', function () {
                 'label' => 'Pilih Ukuran',
                 'mode' => 'normal',
                 'required' => true,
+                'is_base' => true,
                 'position' => 0,
                 'choices' => [
                     ['key' => '15ml', 'name' => '15ml', 'price' => 20000, 'stock' => 20, 'position' => 0],
@@ -74,10 +77,12 @@ test('admin can create product with images and options ordered', function () {
 
 test('validates required fields', function () {
     $admin = Admin::factory()->create();
-    $this->actingAs($admin, 'admin')->post(route('products.store'), [])->assertSessionHasErrors(['name', 'price']);
+    $this->actingAs($admin, 'admin')->post(route('products.store'), [])->assertSessionHasErrors(['name', 'options']);
 });
 
 test('admin can update and reorder options', function () {
+    Category::firstOrCreate(['slug' => 'edp'], ['name' => 'EDP', 'position' => 0, 'is_active' => true]);
+    ProductType::firstOrCreate(['slug' => 'signature'], ['name' => 'Signature', 'position' => 0, 'is_active' => true]);
     $admin = Admin::factory()->create();
     $product = Product::factory()->create(['slug' => 'edit-me', 'name' => 'Edit Me']);
     $this->actingAs($admin, 'admin')
@@ -85,10 +90,21 @@ test('admin can update and reorder options', function () {
             'name' => 'Edited Name',
             'slug' => 'edit-me',
             'gender' => 'Pria',
-            'price' => 50000,
-            'stock' => 10,
-            'category' => 'EDP',
+            'category' => 'edp',
             'type' => 'signature',
+            'options' => [
+                [
+                    'key' => 'ukuran',
+                    'label' => 'Ukuran',
+                    'mode' => 'normal',
+                    'required' => true,
+                    'is_base' => true,
+                    'position' => 0,
+                    'choices' => [
+                        ['key' => '50ml', 'name' => '50ml', 'price' => 50000, 'stock' => 10, 'position' => 0],
+                    ],
+                ],
+            ],
         ])
         ->assertRedirect(route('products.index'));
     expect(Product::where('slug', 'edit-me')->first()->name)->toBe('Edited Name');

@@ -23,14 +23,12 @@ class ProductFactory extends Factory
             'tagline' => fake()->sentence(3),
             'description' => fake()->sentence(),
             'gender' => fake()->randomElement(['Pria', 'Wanita', 'Unisex']),
-            'price' => fake()->randomElement([20000, 35000, 45000]),
-            'stock' => fake()->numberBetween(5, 30),
-            'category' => 'EDP',
+            'category' => 'edp',
             'type' => fake()->randomElement(['signature', 'inspired']),
             'image' => '/assets/products/dynamyst-transparent.png',
             'detail_image' => null,
-            'size_label' => null,
             'is_active' => true,
+            'is_featured' => fake()->boolean(30),
         ];
     }
 }

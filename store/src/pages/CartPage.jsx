@@ -7,6 +7,7 @@ import { OrderSummary } from '../components/cart/OrderSummary';
 import { QuantityControl } from '../components/ui/QuantityControl';
 import { ConfirmDialog } from '../components/feedback/ConfirmDialog';
 import { useToast } from '../context/ToastContext';
+import { resolveImage } from '../lib/api';
 
 export function CartPage() {
   const { cart, subtotal, removeItem, updateQty } = useCart();
@@ -31,7 +32,7 @@ export function CartPage() {
             <div>
               {cart.map((item, index) => (
                 <div key={item.id + '-' + JSON.stringify(item.selectedOptions)} className={`flex gap-4 pb-5 mb-5 ${index < cart.length - 1 ? 'border-b border-black/5' : ''}`}>
-                  <img src={item.image} alt={item.name} className="w-20 h-20 object-cover rounded shrink-0" style={{ width: 80, height: 80 }} />
+                  <img src={resolveImage(item.image)} alt={item.name} className="w-20 h-20 object-cover rounded shrink-0 bg-[#f7f7f7]" style={{ width: 80, height: 80 }} />
                   <div className="flex-1 min-w-0 flex flex-col gap-1">
                     <div className="flex items-start justify-between gap-3">
                       <span className="text-[13px] font-medium text-[#111] font-sans">{item.name}</span>

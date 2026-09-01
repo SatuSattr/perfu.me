@@ -1,9 +1,24 @@
 import { Link } from 'react-router-dom';
 import { Badge } from '../ui/Badge';
+import { resolveImage } from '../../lib/api';
 
 export function ProductCard({ product }) {
   const hoverImage = product.detailImage || product.images?.[1];
   const hasHover = Boolean(hoverImage && hoverImage !== product.image);
+  const resolvedImage = resolveImage(product.image);
+  const resolvedHover = hoverImage ? resolveImage(hoverImage) : null;
+  const displayPrice = (() => {
+    const baseOpt = product.options?.find((o) => o.is_base);
+    if (baseOpt?.choices?.length) {
+      const min = Math.min(...baseOpt.choices.map((c) => c.price ?? 0));
+      return min;
+    }
+    if (product.options?.length) {
+      const allPrices = product.options.flatMap((o) => o.choices.map((c) => c.price ?? 0));
+      if (allPrices.length) return Math.min(...allPrices);
+    }
+    return product.price ?? 0;
+  })();
   return (
     <article className="group flex flex-col bg-white border border-[#e6e6e6] rounded-xl sm:rounded-2xl overflow-hidden transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)]">
       <Link
@@ -11,13 +26,13 @@ export function ProductCard({ product }) {
         className="block relative bg-[#f7f7f7] flex items-center justify-center h-40 sm:h-56 lg:h-64 no-underline overflow-hidden"
       >
         <img
-          src={product.image}
+          src={resolvedImage}
           alt={product.name}
           className={`h-28 sm:h-40 lg:h-52 w-auto object-contain drop-shadow-md transition-opacity duration-500 ease-in-out ${hasHover ? 'group-hover:opacity-0' : ''}`}
         />
-        {hasHover && (
+        {hasHover && resolvedHover && (
           <img
-            src={hoverImage}
+            src={resolvedHover}
             alt={product.name + ' detail'}
             className="absolute inset-0 w-full h-full object-cover opacity-0 transition-opacity duration-500 ease-in-out group-hover:opacity-100"
           />
@@ -30,7 +45,7 @@ export function ProductCard({ product }) {
               {product.name}
             </h2>
             <span className="font-sans text-[12px] sm:text-[0.85rem] text-[#1a1a1a] font-medium block mt-0.5">
-              {'Rp ' + product.price.toLocaleString('id-ID')}
+              {'Rp ' + displayPrice.toLocaleString('id-ID')}
             </span>
           </div>
           <Badge className="text-[7px] sm:text-[9px] px-1.5 sm:px-2 py-0.5 sm:py-1 shrink-0">{product.category}</Badge>

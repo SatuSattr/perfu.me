@@ -1,0 +1,98 @@
+- generic [ref=f16e2]:
+  - banner [ref=f16e3]:
+    - navigation "Navigasi utama" [ref=f16e4]:
+      - link "Perfu.me — halaman beranda" [ref=f16e5] [cursor=pointer]:
+        - /url: /
+        - generic [ref=f16e6]: Perfu.me
+      - generic [ref=f16e7]:
+        - link "Keranjang belanja" [ref=f16e8] [cursor=pointer]:
+          - /url: /cart
+          - generic [ref=f16e14]: "1"
+        - button "Buka menu" [ref=f16e15] [cursor=pointer]
+  - main [ref=f16e19]:
+    - generic [ref=f16e20]:
+      - link "1 Keranjang" [ref=f16e21] [cursor=pointer]:
+        - /url: /cart
+        - generic [ref=f16e22]: "1"
+        - generic [ref=f16e23]: Keranjang
+      - generic [ref=f16e25]:
+        - generic [ref=f16e26]: "2"
+        - generic [ref=f16e27]: Alamat
+      - generic [ref=f16e29]:
+        - generic [ref=f16e30]: "3"
+        - generic [ref=f16e31]: Review
+    - generic [ref=f16e32]:
+      - generic [ref=f16e33]:
+        - heading "Pesanan Anda (1)" [level=2] [ref=f16e34]
+        - generic [ref=f16e36]:
+          - img "Dynamyst" [ref=f16e37]
+          - generic [ref=f16e38]:
+            - generic [ref=f16e39]:
+              - generic [ref=f16e40]: Dynamyst
+              - button "Hapus item" [ref=f16e41] [cursor=pointer]
+            - generic [ref=f16e45]: "Ukuran: 50ml"
+            - generic [ref=f16e47]: Rp 45.000
+            - generic [ref=f16e49]:
+              - button "Kurangi jumlah" [ref=f16e50] [cursor=pointer]
+              - generic [ref=f16e52]: "1"
+              - button "Tambah jumlah" [ref=f16e53] [cursor=pointer]
+      - generic [ref=f16e56]:
+        - heading "Ringkasan Pesanan" [level=3] [ref=f16e57]
+        - generic [ref=f16e58]:
+          - generic [ref=f16e59]:
+            - generic [ref=f16e60]: Subtotal
+            - generic [ref=f16e61]: Rp 45.000
+          - generic [ref=f16e62]:
+            - generic [ref=f16e63]: Ongkos Kirim
+            - generic [ref=f16e64]: Gratis
+          - generic [ref=f16e65]:
+            - generic [ref=f16e66]: Total
+            - generic [ref=f16e67]: Rp 45.000
+        - button "Lanjut ke Alamat" [ref=f16e68] [cursor=pointer]
+  - contentinfo [ref=f16e69]:
+    - generic [ref=f16e70]:
+      - generic [ref=f16e71]:
+        - generic [ref=f16e72]:
+          - link "Perfu.me — halaman beranda" [ref=f16e73] [cursor=pointer]:
+            - /url: /
+            - text: Perfu.me
+          - paragraph [ref=f16e74]: Parfum signature dan inspired scent pilihan — wangi berkarakter dengan harga yang terjangkau untuk semua kalangan.
+          - generic [ref=f16e75]:
+            - link "Instagram Perfu.me" [ref=f16e76] [cursor=pointer]:
+              - /url: https://instagram.com/perfu.mefragrance
+            - link "TikTok Perfu.me" [ref=f16e79] [cursor=pointer]:
+              - /url: "#"
+            - link "WhatsApp Perfu.me" [ref=f16e82] [cursor=pointer]:
+              - /url: https://wa.me/6281383415432
+        - generic [ref=f16e85]:
+          - paragraph [ref=f16e86]: Navigasi
+          - list [ref=f16e87]:
+            - listitem [ref=f16e88]:
+              - link "Home" [ref=f16e89] [cursor=pointer]:
+                - /url: /
+            - listitem [ref=f16e90]:
+              - link "Produk" [ref=f16e91] [cursor=pointer]:
+                - /url: /products
+            - listitem [ref=f16e92]:
+              - link "Keranjang" [ref=f16e93] [cursor=pointer]:
+                - /url: /cart
+        - generic [ref=f16e94]:
+          - paragraph [ref=f16e95]: Informasi
+          - list [ref=f16e96]:
+            - listitem [ref=f16e97]:
+              - link "Tentang Kami" [ref=f16e98] [cursor=pointer]:
+                - /url: "#"
+            - listitem [ref=f16e99]:
+              - link "Cara Pemesanan" [ref=f16e100] [cursor=pointer]:
+                - /url: "#"
+            - listitem [ref=f16e101]:
+              - link "Kebijakan Privasi" [ref=f16e102] [cursor=pointer]:
+                - /url: "#"
+            - listitem [ref=f16e103]:
+              - link "Syarat & Ketentuan" [ref=f16e104] [cursor=pointer]:
+                - /url: "#"
+      - generic [ref=f16e105]:
+        - paragraph [ref=f16e106]: © 2026 Perfu.me. Semua hak dilindungi.
+        - paragraph [ref=f16e107]: Made with care in Indonesia.
+  - link "Chat via WhatsApp" [ref=f16e109] [cursor=pointer]:
+    - /url: https://wa.me/6281383415432

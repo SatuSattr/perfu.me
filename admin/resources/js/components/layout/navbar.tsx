@@ -43,7 +43,7 @@ export function Navbar({ className = "" }: { className?: string }) {
 
     const url = usePage().url;
     const isActive = (path: string) =>
-        url === path || url.startsWith(path + "?");
+        url === path || url.startsWith(path + "/") || url.startsWith(path + "?");
 
     useEffect(() => {
         function onClickOutside(e: MouseEvent) {
@@ -94,6 +94,14 @@ export function Navbar({ className = "" }: { className?: string }) {
                             active={isActive("/products")}
                         >
                             Produk
+                        </NavLink>
+                    </li>
+                    <li>
+                        <NavLink
+                            href="/categories"
+                            active={isActive("/categories")}
+                        >
+                            Kategori
                         </NavLink>
                     </li>
                 </ul>
@@ -212,6 +220,19 @@ export function Navbar({ className = "" }: { className?: string }) {
                     )}
                 >
                     Produk
+                </Link>
+                <Link
+                    href="/categories"
+                    onClick={() => setMobileOpen(false)}
+                    aria-current={isActive("/categories") ? "page" : undefined}
+                    className={cn(
+                        "font-sans text-[11px] font-medium tracking-[0.18em] uppercase no-underline py-4 border-b border-black/5 block transition-colors duration-200",
+                        isActive("/categories")
+                            ? "text-[#111]"
+                            : "text-[#888] hover:text-[#111]",
+                    )}
+                >
+                    Kategori
                 </Link>
             </nav>
         </header>

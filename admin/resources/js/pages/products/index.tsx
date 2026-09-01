@@ -1,4 +1,4 @@
-import { Head, Link, router, usePage } from "@inertiajs/react";
+import { Head, router, usePage } from "@inertiajs/react";
 import { Trash2, Pencil, Plus, Star } from "lucide-react";
 import { useState } from "react";
 import { AppLayout } from "@/layouts/app-layout";
@@ -6,6 +6,7 @@ import { Button, ButtonLink } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { SearchBar } from "@/components/ui/search-bar";
 import { CheckedCombobox } from "@/components/ui/checked-combobox";
+import { Table } from "@/components/ui/table";
 import { formatPrice } from "@/lib/format";
 
 interface ProductRow {
@@ -161,218 +162,96 @@ export default function ProductsIndex() {
                     </div>
                 </div>
 
-                <div className="border border-[#e6e6e6] rounded-2xl overflow-hidden bg-white">
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left border-collapse">
-                            <thead>
-                                <tr className="bg-[#fafafa] border-b border-[#e6e6e6]">
-                                    <th className="font-sans text-[10px] uppercase tracking-[0.12em] text-[#888] px-4 py-3 whitespace-nowrap">
-                                        Produk
-                                    </th>
-                                    <th className="font-sans text-[10px] uppercase tracking-[0.12em] text-[#888] px-4 py-3 whitespace-nowrap">
-                                        Tipe
-                                    </th>
-                                    <th className="font-sans text-[10px] uppercase tracking-[0.12em] text-[#888] px-4 py-3 whitespace-nowrap">
-                                        Gender
-                                    </th>
-                                    <th className="font-sans text-[10px] uppercase tracking-[0.12em] text-[#888] px-4 py-3 whitespace-nowrap">
-                                        Harga
-                                    </th>
-                                    <th className="font-sans text-[10px] uppercase tracking-[0.12em] text-[#888] px-4 py-3 whitespace-nowrap">
-                                        Stok
-                                    </th>
-                                    <th className="font-sans text-[10px] uppercase tracking-[0.12em] text-[#888] px-4 py-3 whitespace-nowrap text-right">
-                                        Aksi
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {products.data.length === 0 ? (
-                                    <tr>
-                                        <td
-                                            colSpan={6}
-                                            className="px-4 py-10 text-center font-sans text-[12px] text-[#aaa]"
-                                        >
-                                            Tidak ada produk.
-                                        </td>
-                                    </tr>
-                                ) : (
-                                    products.data.map((row) => (
-                                        <tr
-                                            key={row.slug}
-                                            className="border-b border-[#f2f2f2] last:border-0 hover:bg-[#fafafa] transition-colors"
-                                        >
-                                            <td className="px-4 py-3">
-                                                <div className="flex items-center gap-3 min-w-0">
-                                                    <div
-                                                        className="rounded-lg bg-[#f7f7f7] border border-[#e6e6e6] overflow-hidden shrink-0 flex items-center justify-center"
-                                                        style={{
-                                                            width: 40,
-                                                            height: 40,
-                                                            minWidth: 40,
-                                                            minHeight: 40,
-                                                            maxWidth: 40,
-                                                            maxHeight: 40,
-                                                        }}
-                                                    >
-                                                        {row.image ? (
-                                                            <img
-                                                                src={row.image}
-                                                                alt={row.name}
-                                                                style={{
-                                                                    width: 40,
-                                                                    height: 40,
-                                                                    objectFit:
-                                                                        "cover",
-                                                                    display:
-                                                                        "block",
-                                                                    maxWidth: 40,
-                                                                }}
-                                                                loading="lazy"
-                                                            />
-                                                        ) : (
-                                                            <span className="font-sans text-[10px] text-[#bbb]">
-                                                                —
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                    <div className="min-w-0">
-                                                        <p className="font-sans text-[13px] font-medium text-[#1a1a1a] leading-none truncate">
-                                                            {row.name}
-                                                        </p>
-                                                        <p className="font-sans text-[11px] text-[#888] leading-none mt-1 truncate max-w-[200px]">
-                                                            {row.tagline ??
-                                                                row.slug}
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td className="px-4 py-3">
-                                                <Badge className="text-[9px] uppercase tracking-[0.12em]">
-                                                    {row.type}
-                                                </Badge>
-                                            </td>
-                                            <td className="px-4 py-3 font-sans text-[12px] text-[#555]">
-                                                {row.gender}
-                                            </td>
-                                            <td className="px-4 py-3">
-                                                <span className="font-sans text-[12px] font-medium text-[#1a1a1a]">
-                                                    {formatPrice(row.price)}
-                                                </span>
-                                                {row.priceRange[0] !==
-                                                    row.priceRange[1] && (
-                                                    <span className="font-sans text-[11px] text-[#888] ml-1">
-                                                        (
-                                                        {formatPrice(
-                                                            row.priceRange[0],
-                                                        )}
-                                                        –
-                                                        {formatPrice(
-                                                            row.priceRange[1],
-                                                        )}
-                                                        )
-                                                    </span>
-                                                )}
-                                            </td>
-                                            <td className="px-4 py-3">
-                                                <span
-                                                    className={`font-sans text-[12px] ${row.totalStock > 0 ? "text-[#1a1a1a]" : "text-red-500"}`}
-                                                >
-                                                    {row.totalStock > 0
-                                                        ? `${row.totalStock}`
-                                                        : "Habis"}
-                                                </span>
-                                            </td>
-                                            <td className="px-4 py-3">
-                                                <div className="flex items-center justify-end gap-1.5">
-                                                    <ButtonLink
-                                                        href={`/products/${row.slug}/reviews`}
-                                                        variant="secondary"
-                                                        size="icon"
-                                                        aria-label={`Ulasan ${row.name}`}
-                                                    >
-                                                        <Star size={14} strokeWidth={1.5} />
-                                                    </ButtonLink>
-                                                    <ButtonLink
-                                                        href={`/products/${row.slug}/edit`}
-                                                        variant="secondary"
-                                                        size="icon"
-                                                        aria-label={`Edit ${row.name}`}
-                                                    >
-                                                        <Pencil size={14} strokeWidth={1.5} />
-                                                    </ButtonLink>
-                                                    <Button
-                                                        variant="outline"
-                                                        size="icon"
-                                                        onClick={() => setConfirmSlug(row.slug)}
-                                                        aria-label={`Hapus ${row.name}`}
-                                                        className="text-[#888] hover:border-red-400 hover:text-red-500"
-                                                    >
-                                                        <Trash2 size={14} strokeWidth={1.5} />
-                                                    </Button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
-                    {products.last_page > 1 ? (
-                        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-[#e6e6e6] bg-[#fafafa]/50 px-4 py-3">
-                            <span className="font-sans text-[11px] text-[#888]">
-                                Hal {products.current_page} dari{" "}
-                                {products.last_page} · {products.data.length}{" "}
-                                produk
-                            </span>
-                            <div className="flex items-center gap-1 flex-wrap justify-center">
-                                {products.links.map((link, i) => {
-                                    const isPrev =
-                                        link.label.includes("Previous") ||
-                                        link.label.includes("&laquo;");
-                                    const isNext =
-                                        link.label.includes("Next") ||
-                                        link.label.includes("&raquo;");
-                                    const label = isPrev
-                                        ? "Prev"
-                                        : isNext
-                                          ? "Next"
-                                          : link.label
-                                                .replace(/&[^;]+;/g, "")
-                                                .trim();
-                                    return (
-                                        <Link
-                                            key={i}
-                                            href={link.url ?? "#"}
-                                            preserveState
-                                            preserveScroll
-                                            className={`min-w-[36px] h-8 px-3 inline-flex items-center justify-center rounded-full font-sans text-[12px] border transition-colors duration-200 ${
-                                                link.active
-                                                    ? "bg-[#1a1a1a] text-white border-[#1a1a1a]"
-                                                    : "bg-white text-[#666] border-[#e6e6e6] hover:border-[#1a1a1a] hover:text-[#1a1a1a]"
-                                            } ${!link.url ? "opacity-40 pointer-events-none" : ""}`}
-                                        >
-                                            <span
-                                                dangerouslySetInnerHTML={{
-                                                    __html: label,
-                                                }}
+                <Table<ProductRow & Record<string, unknown>>
+                    columns={[
+                        {
+                            key: 'name',
+                            header: 'Produk',
+                            render: (_v, row) => (
+                                <div className="flex items-center gap-3 min-w-0">
+                                    <div
+                                        className="rounded-lg bg-[#f7f7f7] border border-[#e6e6e6] overflow-hidden shrink-0 flex items-center justify-center"
+                                        style={{ width: 40, height: 40, minWidth: 40, minHeight: 40, maxWidth: 40, maxHeight: 40 }}
+                                    >
+                                        {row.image ? (
+                                            <img
+                                                src={row.image as string}
+                                                alt={row.name as string}
+                                                style={{ width: 40, height: 40, objectFit: 'cover', display: 'block', maxWidth: 40 }}
+                                                loading="lazy"
                                             />
-                                        </Link>
-                                    );
-                                })}
-                            </div>
-                        </div>
-                    ) : (
-                        <div className="flex items-center justify-between border-t border-[#e6e6e6] bg-[#fafafa]/50 px-4 py-3">
-                            <span className="font-sans text-[11px] text-[#888]">
-                                {products.data.length} produk · Hal 1 dari 1
-                            </span>
-                            <span className="font-sans text-[11px] text-[#aaa]">
-                                —
-                            </span>
-                        </div>
-                    )}
-                </div>
+                                        ) : (
+                                            <span className="font-sans text-[10px] text-[#bbb]">—</span>
+                                        )}
+                                    </div>
+                                    <div className="min-w-0">
+                                        <p className="font-sans text-[13px] font-medium text-[#1a1a1a] leading-none truncate">{row.name as string}</p>
+                                        <p className="font-sans text-[11px] text-[#888] leading-none mt-1 truncate max-w-[200px]">{(row.tagline as string) ?? (row.slug as string)}</p>
+                                    </div>
+                                </div>
+                            ),
+                        },
+                        {
+                            key: 'type',
+                            header: 'Tipe',
+                            render: (_v, row) => <Badge className="text-[9px] uppercase tracking-[0.12em]">{row.type as string}</Badge>,
+                        },
+                        {
+                            key: 'gender',
+                            header: 'Gender',
+                            cellClassName: 'font-sans text-[12px] text-[#555]',
+                            render: (v) => v as string,
+                        },
+                        {
+                            key: 'price',
+                            header: 'Harga',
+                            render: (_v, row) => (
+                                <>
+                                    <span className="font-sans text-[12px] font-medium text-[#1a1a1a]">{formatPrice(row.price as number)}</span>
+                                    {(row.priceRange as [number, number])[0] !== (row.priceRange as [number, number])[1] && (
+                                        <span className="font-sans text-[11px] text-[#888] ml-1">
+                                            ({formatPrice((row.priceRange as [number, number])[0])}–{formatPrice((row.priceRange as [number, number])[1])})
+                                        </span>
+                                    )}
+                                </>
+                            ),
+                        },
+                        {
+                            key: 'totalStock',
+                            header: 'Stok',
+                            render: (_v, row) => (
+                                <span className={`font-sans text-[12px] ${(row.totalStock as number) > 0 ? 'text-[#1a1a1a]' : 'text-red-500'}`}>
+                                    {(row.totalStock as number) > 0 ? `${row.totalStock as number}` : 'Habis'}
+                                </span>
+                            ),
+                        },
+                        {
+                            key: 'actions',
+                            header: 'Aksi',
+                            headerClassName: 'text-right',
+                            cellClassName: 'text-right',
+                            render: (_v, row) => (
+                                <div className="flex items-center justify-end gap-1.5">
+                                    <ButtonLink href={`/products/${row.slug as string}/reviews`} variant="secondary" size="icon" aria-label={`Ulasan ${row.name as string}`}>
+                                        <Star size={14} strokeWidth={1.5} />
+                                    </ButtonLink>
+                                    <ButtonLink href={`/products/${row.slug as string}/edit`} variant="secondary" size="icon" aria-label={`Edit ${row.name as string}`}>
+                                        <Pencil size={14} strokeWidth={1.5} />
+                                    </ButtonLink>
+                                    <Button variant="outline" size="icon" onClick={() => setConfirmSlug(row.slug as string)} aria-label={`Hapus ${row.name as string}`} className="text-[#888] hover:border-red-400 hover:text-red-500">
+                                        <Trash2 size={14} strokeWidth={1.5} />
+                                    </Button>
+                                </div>
+                            ),
+                        },
+                    ]}
+                    data={products.data as unknown as (ProductRow & Record<string, unknown>)[]}
+                    rowKey={(row) => row.slug as string}
+                    emptyText="Tidak ada produk."
+                    pagination={{ links: products.links, current_page: products.current_page, last_page: products.last_page }}
+                    paginationMetaText={products.last_page > 1 ? `Hal ${products.current_page} dari ${products.last_page} · ${products.data.length} produk` : `${products.data.length} produk · Hal 1 dari 1`}
+                    paginationLabel="produk"
+                />
 
                 {confirmSlug && (
                     <div

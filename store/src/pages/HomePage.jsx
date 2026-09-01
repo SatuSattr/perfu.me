@@ -7,10 +7,13 @@ import {
   Truck,
   MapPin,
 } from "lucide-react";
-import { products, testimonials, badges } from "../data/products";
+import { useEffect, useState } from "react";
+import { testimonials, badges } from "../data/site";
 import { ProductCard } from "../components/product/ProductCard";
 import { StarRating } from "../components/product/StarRating";
 import { CtaButtonGroup } from "../components/ui/CtaButton";
+import { fetchFeatured } from "../lib/api";
+import { ProductCardSkeleton } from "../components/ui/Skeleton";
 
 const lucideIconMap = {
   package: Package,
@@ -34,6 +37,34 @@ function BadgeIcon({ name }) {
 
 export function HomePage() {
   const doubled = [...testimonials, ...testimonials];
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    const ctrl = new AbortController();
+    setLoading(true);
+    setError('');
+    fetchFeatured(6, { signal: ctrl.signal })
+      .then((res) => {
+        const data = res.data ?? res;
+        if (Array.isArray(data) && data.length) {
+          setProducts(data.slice(0, 6));
+        } else {
+          setProducts([]);
+        }
+        setError('');
+      })
+      .catch((e) => {
+        if (e.name === 'AbortError') return;
+        setError(e.status === 429 ? 'Terlalu banyak permintaan, coba lagi nanti.' : 'Gagal memuat produk.');
+        setProducts([]);
+      })
+      .finally(() => {
+        if (!ctrl.signal.aborted) setLoading(false);
+      });
+    return () => ctrl.abort();
+  }, []);
 
   return (
     <div className="pt-[16px]">
@@ -80,9 +111,15 @@ export function HomePage() {
             </h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {products.map((p) => (
-              <ProductCard key={p.id} product={p} />
-            ))}
+            {loading ? (
+              Array.from({ length: 6 }).map((_, i) => <ProductCardSkeleton key={i} />)
+            ) : error ? (
+              <p className="col-span-full font-sans text-[13px] text-[#888] py-10 text-center">{error}</p>
+            ) : products.length === 0 ? (
+              <p className="col-span-full font-sans text-[13px] text-[#aaa] py-10 text-center">Belum ada produk featured.</p>
+            ) : (
+              products.slice(0, 6).map((p) => <ProductCard key={p.id} product={p} />)
+            )}
           </div>
         </section>
       </div>

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProductController;
 use Illuminate\Support\Facades\Route;
@@ -27,9 +28,25 @@ Route::middleware('auth:admin')->group(function () {
 
     Route::patch('/products/{product:slug}/basic', [ProductController::class, 'updateBasic'])->name('products.basic.update');
     Route::patch('/products/{product:slug}/media', [ProductController::class, 'updateMedia'])->name('products.media.update');
+    Route::post('/products/{product:slug}/media/upload', [ProductController::class, 'uploadMedia'])->name('products.media.upload');
     Route::patch('/products/{product:slug}/options', [ProductController::class, 'updateOptions'])->name('products.options.update');
 
     Route::resource('products', ProductController::class)->parameters([
         'products' => 'product:slug',
     ])->except(['show']);
+
+    // Categories & Types (2 models on one page)
+    Route::get('/categories', [CategoryController::class, 'indexPage'])->name('categories.index');
+    Route::get('/categories/create', [CategoryController::class, 'indexPage'])->name('categories.create');
+    Route::get('/categories/{category}/edit', [CategoryController::class, 'indexPage'])->name('categories.edit');
+    Route::get('/categories/types/create', [CategoryController::class, 'indexPage'])->name('categories.types.create');
+    Route::get('/categories/types/{productType}/edit', [CategoryController::class, 'indexPage'])->name('categories.types.edit');
+
+    Route::post('/categories', [CategoryController::class, 'storeCategory'])->name('categories.store');
+    Route::put('/categories/{category}', [CategoryController::class, 'updateCategory'])->name('categories.update');
+    Route::delete('/categories/{category}', [CategoryController::class, 'destroyCategory'])->name('categories.destroy');
+
+    Route::post('/categories/types', [CategoryController::class, 'storeType'])->name('categories.types.store');
+    Route::put('/categories/types/{productType}', [CategoryController::class, 'updateType'])->name('categories.types.update');
+    Route::delete('/categories/types/{productType}', [CategoryController::class, 'destroyType'])->name('categories.types.destroy');
 });

@@ -33,7 +33,7 @@ export function Checkbox({
     return (
         <div className={cn('flex flex-col gap-1.5', className)}>
             <label htmlFor={inputId} className={cn('flex items-start gap-2.5 cursor-pointer select-none group', disabled && 'opacity-50 cursor-not-allowed')}>
-                <span className="relative flex shrink-0 mt-[2px]">
+                <span className="relative flex shrink-0 mt-[3px]">
                     <input
                         id={inputId}
                         type="checkbox"

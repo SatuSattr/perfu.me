@@ -19,7 +19,7 @@ export function ChoiceFormPanel({ mode, initial, onClose, onSave, onDirtyChange,
         () => ({
             key: initial?.key ?? '',
             name: initial?.name ?? '',
-            price: initial?.price ?? null,
+            price: initial?.price ?? 0,
             stock: initial?.stock ?? 0,
             position: initial?.position ?? 0,
         }),
@@ -47,7 +47,8 @@ export function ChoiceFormPanel({ mode, initial, onClose, onSave, onDirtyChange,
         else if (!/^[a-z0-9_-]+$/.test(draft.key)) e.key = 'Hanya a-z, 0-9, _ dan -.';
         if (draft.stock === null || draft.stock === undefined || Number.isNaN(Number(draft.stock))) e.stock = 'Stok wajib diisi.';
         else if (Number(draft.stock) < 0) e.stock = 'Minimal 0.';
-        if (draft.price !== null && draft.price !== undefined && Number(draft.price) < 0) e.price = 'Minimal 0.';
+        if (draft.price === null || draft.price === undefined || Number.isNaN(Number(draft.price))) e.price = 'Harga wajib diisi.';
+        else if (Number(draft.price) < 0) e.price = 'Minimal 0.';
         setErrors(e);
         return Object.keys(e).length === 0;
     }
@@ -58,7 +59,7 @@ export function ChoiceFormPanel({ mode, initial, onClose, onSave, onDirtyChange,
             ...draft,
             key: draft.key.toLowerCase().replace(/[^a-z0-9_-]/g, '-'),
             name: draft.name.trim(),
-            price: draft.price === '' || draft.price === null ? null : Number(draft.price),
+            price: Number(draft.price),
             stock: Number(draft.stock),
         };
         onSave(cleaned);
@@ -88,11 +89,11 @@ export function ChoiceFormPanel({ mode, initial, onClose, onSave, onDirtyChange,
                 />
                 <div className="grid grid-cols-2 gap-3">
                     <Input
-                        label="Harga"
+                        label="Harga *"
                         type="number"
-                        value={draft.price ?? ''}
-                        onChange={(e) => setDraft({ ...draft, price: e.target.value === '' ? null : Number(e.target.value) })}
-                        placeholder="Kosong = default"
+                        value={draft.price ?? 0}
+                        onChange={(e) => setDraft({ ...draft, price: Number(e.target.value) })}
+                        placeholder="0"
                         error={errors.price}
                     />
                     <Input label="Stok *" type="number" value={draft.stock} onChange={(e) => setDraft({ ...draft, stock: Number(e.target.value) })} error={errors.stock} />

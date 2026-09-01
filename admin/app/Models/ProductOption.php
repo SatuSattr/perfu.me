@@ -21,13 +21,14 @@ use Illuminate\Support\Carbon;
  * @property string $label
  * @property ProductOptionMode $mode
  * @property bool $is_required
+ * @property bool $is_base
  * @property int $position
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property-read Product $product
  * @property-read Collection<int, ProductOptionChoice> $choices
  */
-#[Fillable(['product_id', 'key', 'label', 'mode', 'is_required', 'position'])]
+#[Fillable(['product_id', 'key', 'label', 'mode', 'is_required', 'is_base', 'position'])]
 class ProductOption extends Model
 {
     /** @use HasFactory<ProductOptionFactory> */
@@ -38,6 +39,7 @@ class ProductOption extends Model
         return [
             'mode' => ProductOptionMode::class,
             'is_required' => 'boolean',
+            'is_base' => 'boolean',
             'position' => 'integer',
         ];
     }
@@ -79,6 +81,7 @@ class ProductOption extends Model
             'label' => $this->label,
             'mode' => $this->mode->value,
             'required' => $this->is_required,
+            'is_base' => $this->is_base,
             'position' => $this->position,
             'choices' => $this->choices->map(fn (ProductOptionChoice $c) => $c->toStorePayload())->all(),
         ];

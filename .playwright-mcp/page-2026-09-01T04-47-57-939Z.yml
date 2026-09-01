@@ -1,0 +1,71 @@
+- generic [ref=f2e2]:
+  - banner [ref=f2e3]:
+    - navigation "Navigasi utama" [ref=f2e4]:
+      - link "Perfu.me — halaman beranda" [ref=f2e5] [cursor=pointer]:
+        - /url: /
+        - generic [ref=f2e6]: Perfu.me
+      - generic [ref=f2e7]:
+        - link "Keranjang belanja" [ref=f2e8] [cursor=pointer]:
+          - /url: /cart
+        - button "Buka menu" [ref=f2e14] [cursor=pointer]
+  - main [ref=f2e18]:
+    - generic [ref=f2e19]:
+      - generic [ref=f2e20]:
+        - paragraph [ref=f2e21]: Perfu.me
+        - heading "Koleksi Parfum" [level=1] [ref=f2e22]
+        - paragraph [ref=f2e23]: Signature dan inspired scent pilihan — wangi berkarakter, harga terjangkau.
+      - generic [ref=f2e24]:
+        - textbox "Cari produk..." [ref=f2e27]
+        - generic [ref=f2e28]:
+          - button "Semua" [ref=f2e29] [cursor=pointer]
+          - button "Pria" [ref=f2e30] [cursor=pointer]
+          - button "Wanita" [ref=f2e31] [cursor=pointer]
+          - button "Unisex" [ref=f2e32] [cursor=pointer]
+      - paragraph [ref=f2e33]: Tidak ada produk yang cocok.
+  - contentinfo [ref=f2e34]:
+    - generic [ref=f2e35]:
+      - generic [ref=f2e36]:
+        - generic [ref=f2e37]:
+          - link "Perfu.me — halaman beranda" [ref=f2e38] [cursor=pointer]:
+            - /url: /
+            - text: Perfu.me
+          - paragraph [ref=f2e39]: Parfum signature dan inspired scent pilihan — wangi berkarakter dengan harga yang terjangkau untuk semua kalangan.
+          - generic [ref=f2e40]:
+            - link "Instagram Perfu.me" [ref=f2e41] [cursor=pointer]:
+              - /url: https://instagram.com/perfu.mefragrance
+            - link "TikTok Perfu.me" [ref=f2e44] [cursor=pointer]:
+              - /url: "#"
+            - link "WhatsApp Perfu.me" [ref=f2e47] [cursor=pointer]:
+              - /url: https://wa.me/6281383415432
+        - generic [ref=f2e50]:
+          - paragraph [ref=f2e51]: Navigasi
+          - list [ref=f2e52]:
+            - listitem [ref=f2e53]:
+              - link "Home" [ref=f2e54] [cursor=pointer]:
+                - /url: /
+            - listitem [ref=f2e55]:
+              - link "Produk" [ref=f2e56] [cursor=pointer]:
+                - /url: /products
+            - listitem [ref=f2e57]:
+              - link "Keranjang" [ref=f2e58] [cursor=pointer]:
+                - /url: /cart
+        - generic [ref=f2e59]:
+          - paragraph [ref=f2e60]: Informasi
+          - list [ref=f2e61]:
+            - listitem [ref=f2e62]:
+              - link "Tentang Kami" [ref=f2e63] [cursor=pointer]:
+                - /url: "#"
+            - listitem [ref=f2e64]:
+              - link "Cara Pemesanan" [ref=f2e65] [cursor=pointer]:
+                - /url: "#"
+            - listitem [ref=f2e66]:
+              - link "Kebijakan Privasi" [ref=f2e67] [cursor=pointer]:
+                - /url: "#"
+            - listitem [ref=f2e68]:
+              - link "Syarat & Ketentuan" [ref=f2e69] [cursor=pointer]:
+                - /url: "#"
+      - generic [ref=f2e70]:
+        - paragraph [ref=f2e71]: © 2026 Perfu.me. Semua hak dilindungi.
+        - paragraph [ref=f2e72]: Made with care in Indonesia.
+  - link "Chat via WhatsApp" [ref=f2e74] [cursor=pointer]:
+    - /url: https://wa.me/6281383415432

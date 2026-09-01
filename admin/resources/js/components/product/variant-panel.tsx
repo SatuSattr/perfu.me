@@ -2,7 +2,7 @@ import * as React from 'react';
 import { ChevronDown, ChevronUp, Pencil, Plus, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { Table } from '@/components/ui/table';
 import { SidePanel } from '@/components/ui/side-panel';
 import { ConfirmDialog } from '@/components/feedback/confirm-dialog';
 import { ChoiceFormPanel } from './choice-form-panel';
@@ -14,6 +14,7 @@ export interface OptionItem {
     label: string;
     mode: 'dropdown' | 'normal';
     required: boolean;
+    is_base: boolean;
     position: number;
     choices: ChoiceItem[];
 }
@@ -93,7 +94,12 @@ export function VariantPanel({ option, index, total, onEdit, onDelete, onMoveUp,
                         <h3 className="font-sans text-[12px] font-semibold tracking-[0.12em] uppercase text-[#1a1a1a]">
                             Varian — {option.label || option.key || `#${index + 1}`}
                         </h3>
-                        <Badge className="text-[8px]">{option.mode === 'dropdown' ? 'Dropdown' : 'Pill'}</Badge>
+                        <span className="font-sans text-[8px] uppercase tracking-[0.12em] text-[#888] bg-[#f5f5f5] border border-[#e6e6e6] rounded-full px-2 py-0.5">{option.mode === 'dropdown' ? 'Dropdown' : 'Pill'}</span>
+                        {option.is_base && (
+                            <span className="font-sans text-[8px] uppercase tracking-[0.12em] text-white bg-[#1a1a1a] border border-[#1a1a1a] rounded-full px-2 py-0.5">
+                                Dasar
+                            </span>
+                        )}
                         {option.required && (
                             <span className="font-sans text-[9px] uppercase tracking-[0.12em] text-[#888] bg-[#f5f5f5] border border-[#e6e6e6] rounded-full px-2 py-0.5">
                                 Wajib
@@ -105,10 +111,10 @@ export function VariantPanel({ option, index, total, onEdit, onDelete, onMoveUp,
                     </p>
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
-                    <Button variant="secondary" size="icon-sm" onClick={onMoveUp} disabled={index === 0} aria-label="Pindah ke atas">
+                    <Button variant="secondary" size="icon-sm" onClick={onMoveUp} disabled={option.is_base || index === 0} aria-label="Pindah ke atas">
                         <ChevronUp size={12} strokeWidth={1.8} />
                     </Button>
-                    <Button variant="secondary" size="icon-sm" onClick={onMoveDown} disabled={index === total - 1} aria-label="Pindah ke bawah">
+                    <Button variant="secondary" size="icon-sm" onClick={onMoveDown} disabled={option.is_base || index === total - 1} aria-label="Pindah ke bawah">
                         <ChevronDown size={12} strokeWidth={1.8} />
                     </Button>
                     <Button variant="secondary" size="icon-sm" onClick={onEdit} aria-label="Edit varian">
@@ -130,67 +136,87 @@ export function VariantPanel({ option, index, total, onEdit, onDelete, onMoveUp,
                     </Button>
                 </div>
 
-                <div className="border border-[#e6e6e6] rounded-xl overflow-hidden bg-white">
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left border-collapse">
-                            <thead>
-                                <tr className="bg-[#fafafa] border-b border-[#e6e6e6]">
-                                    <th className="font-sans text-[10px] uppercase tracking-[0.12em] text-[#888] px-3 py-2 whitespace-nowrap">Nama</th>
-                                    <th className="font-sans text-[10px] uppercase tracking-[0.12em] text-[#888] px-3 py-2 whitespace-nowrap">Key</th>
-                                    <th className="font-sans text-[10px] uppercase tracking-[0.12em] text-[#888] px-3 py-2 whitespace-nowrap">Harga</th>
-                                    <th className="font-sans text-[10px] uppercase tracking-[0.12em] text-[#888] px-3 py-2 whitespace-nowrap">Stok</th>
-                                    <th className="font-sans text-[10px] uppercase tracking-[0.12em] text-[#888] px-3 py-2 whitespace-nowrap text-right">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {option.choices.length === 0 ? (
-                                    <tr>
-                                        <td colSpan={5} className="px-3 py-8 text-center font-sans text-[12px] text-[#aaa]">
-                                            Belum ada pilihan
-                                        </td>
-                                    </tr>
-                                ) : (
-                                    option.choices.map((choice, idx) => (
-                                        <tr key={`${choice.key}-${idx}`} className="group border-b border-[#f2f2f2] last:border-0 hover:bg-[#fafafa] transition-colors">
-                                            <td className="px-3 py-2 font-sans text-[12px] font-medium text-[#1a1a1a] max-w-[140px] truncate">{choice.name || '—'}</td>
-                                            <td className="px-3 py-2 font-mono text-[11px] text-[#888] max-w-[120px] truncate">{choice.key || '—'}</td>
-                                            <td className="px-3 py-2 font-sans text-[11px] text-[#555] whitespace-nowrap">
-                                                {choice.price === null || choice.price === undefined ? <span className="text-[#aaa]">Default</span> : formatPrice(choice.price as number)}
-                                            </td>
-                                            <td className="px-3 py-2 font-sans text-[11px] text-[#1a1a1a] whitespace-nowrap">{choice.stock}</td>
-                                            <td className="px-3 py-2">
-                                                <div className="flex items-center justify-end gap-1">
-                                                    <Button variant="secondary" size="icon-sm" onClick={() => {
-                                                        const next = [...option.choices];
-                                                        const [m] = next.splice(idx, 1);
-                                                        next.splice(idx - 1, 0, m);
-                                                        updateChoices(next);
-                                                    }} disabled={idx === 0} aria-label="Pindah ke atas" className="h-6 w-6 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity">
-                                                        <ChevronUp size={10} strokeWidth={1.8} />
-                                                    </Button>
-                                                    <Button variant="secondary" size="icon-sm" onClick={() => {
-                                                        const next = [...option.choices];
-                                                        const [m] = next.splice(idx, 1);
-                                                        next.splice(idx + 1, 0, m);
-                                                        updateChoices(next);
-                                                    }} disabled={idx === option.choices.length - 1} aria-label="Pindah ke bawah" className="h-6 w-6 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity">
-                                                        <ChevronDown size={10} strokeWidth={1.8} />
-                                                    </Button>
-                                                    <Button variant="secondary" size="icon-sm" onClick={() => openEditChoice(idx)} aria-label="Edit pilihan" className="h-6 w-6">
-                                                        <Pencil size={10} strokeWidth={1.8} />
-                                                    </Button>
-                                                    <Button variant="outline" size="icon-sm" onClick={() => setConfirmChoiceDelete(idx)} aria-label="Hapus pilihan" className="text-[#888] hover:border-red-400 hover:text-red-500 h-6 w-6">
-                                                        <Trash2 size={10} strokeWidth={1.8} />
-                                                    </Button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+                <Table<ChoiceItem & Record<string, unknown>>
+                    columns={[
+                        { key: 'name', header: 'Nama', cellClassName: 'px-3 py-2 font-sans text-[12px] font-medium text-[#1a1a1a] max-w-[140px] truncate', headerClassName: 'px-3 py-2', render: (_v, row) => (row as ChoiceItem).name || '—' },
+                        { key: 'key', header: 'Key', cellClassName: 'px-3 py-2 font-mono text-[11px] text-[#888] max-w-[120px] truncate', headerClassName: 'px-3 py-2', render: (_v, row) => (row as ChoiceItem).key || '—' },
+                        {
+                            key: 'price',
+                            header: 'Harga',
+                            headerClassName: 'px-3 py-2',
+                            cellClassName: 'px-3 py-2 font-sans text-[11px] text-[#555] whitespace-nowrap',
+                            render: (_v, row) => {
+                                const c = row as ChoiceItem;
+                                return c.price === null || c.price === undefined ? <span className="text-[#aaa]">Default</span> : formatPrice(c.price as number);
+                            },
+                        },
+                        {
+                            key: 'stock',
+                            header: 'Stok',
+                            headerClassName: 'px-3 py-2',
+                            render: (_v, row) => {
+                                const c = row as ChoiceItem;
+                                return <span className={`font-sans text-[11px] whitespace-nowrap ${c.stock === 0 ? 'text-red-500 font-medium' : 'text-[#1a1a1a]'}`}>{c.stock}</span>;
+                            },
+                        },
+                        {
+                            key: 'actions',
+                            header: 'Aksi',
+                            headerClassName: 'text-right px-3 py-2',
+                            cellClassName: 'px-3 py-2',
+                            render: (_v, row, idx) => {
+                                const choiceIdx = idx as unknown as number;
+                                return (
+                                    <div className="flex items-center justify-end gap-1">
+                                        <Button
+                                            variant="secondary"
+                                            size="icon-sm"
+                                            onClick={() => {
+                                                const next = [...option.choices];
+                                                const [m] = next.splice(choiceIdx, 1);
+                                                next.splice(choiceIdx - 1, 0, m);
+                                                updateChoices(next);
+                                            }}
+                                            disabled={choiceIdx === 0}
+                                            aria-label="Pindah ke atas"
+                                            className="h-6 w-6 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 disabled:opacity-0 group-hover:disabled:opacity-40 transition-opacity disabled:cursor-not-allowed"
+                                        >
+                                            <ChevronUp size={10} strokeWidth={1.8} />
+                                        </Button>
+                                        <Button
+                                            variant="secondary"
+                                            size="icon-sm"
+                                            onClick={() => {
+                                                const next = [...option.choices];
+                                                const [m] = next.splice(choiceIdx, 1);
+                                                next.splice(choiceIdx + 1, 0, m);
+                                                updateChoices(next);
+                                            }}
+                                            disabled={choiceIdx === option.choices.length - 1}
+                                            aria-label="Pindah ke bawah"
+                                            className="h-6 w-6 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 disabled:opacity-0 group-hover:disabled:opacity-40 transition-opacity disabled:cursor-not-allowed"
+                                        >
+                                            <ChevronDown size={10} strokeWidth={1.8} />
+                                        </Button>
+                                        <Button variant="secondary" size="icon-sm" onClick={() => openEditChoice(choiceIdx)} aria-label="Edit pilihan" className="h-6 w-6">
+                                            <Pencil size={10} strokeWidth={1.8} />
+                                        </Button>
+                                        <Button variant="outline" size="icon-sm" onClick={() => setConfirmChoiceDelete(choiceIdx)} aria-label="Hapus pilihan" className="text-[#888] hover:border-red-400 hover:text-red-500 h-6 w-6">
+                                            <Trash2 size={10} strokeWidth={1.8} />
+                                        </Button>
+                                    </div>
+                                );
+                            },
+                        },
+                    ]}
+                    data={option.choices as unknown as (ChoiceItem & Record<string, unknown>)[]}
+                    rowKey={(row, idx) => `${(row as ChoiceItem).key}-${idx}`}
+                    emptyText="Belum ada pilihan"
+                    hidePagination
+                    maxHeight="280px"
+                    stickyHeader
+                    wrapperClassName="rounded-xl"
+                />
 
 
             </div>

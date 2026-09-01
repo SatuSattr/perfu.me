@@ -21,6 +21,7 @@ const defaultDraft = (pos: number): OptionItem => ({
     label: '',
     mode: 'dropdown',
     required: true,
+    is_base: false,
     position: pos,
     choices: [],
 });
@@ -102,6 +103,14 @@ export function VariantFormPanel({ mode, initial, onClose, onSave, onDirtyChange
                         description="pelanggan harus memilih salah satu pilihan sebelum checkout"
                         checked={draft.required}
                         onCheckedChange={(v) => setDraft({ ...draft, required: v })}
+                    />
+                </div>
+                <div className="pt-1">
+                    <Checkbox
+                        label="Varian dasar"
+                        description="harga terendah dari varian ini tampil di katalog; hanya satu varian bisa jadi dasar"
+                        checked={draft.is_base}
+                        onCheckedChange={(v) => setDraft({ ...draft, is_base: v, required: v ? true : draft.required })}
                     />
                 </div>
                 {errors.required && (

@@ -1,0 +1,107 @@
+- generic [ref=f4e2]:
+  - banner [ref=f4e3]:
+    - navigation "Navigasi utama" [ref=f4e4]:
+      - link "Perfu.me — halaman beranda" [ref=f4e5] [cursor=pointer]:
+        - /url: /
+        - generic [ref=f4e6]: Perfu.me
+      - generic [ref=f4e7]:
+        - link "Keranjang belanja" [ref=f4e8] [cursor=pointer]:
+          - /url: /cart
+        - button "Buka menu" [ref=f4e14] [cursor=pointer]
+  - generic [ref=f4e19]:
+    - link "Kembali ke Koleksi" [ref=f4e20] [cursor=pointer]:
+      - /url: /products
+    - generic [ref=f4e23]:
+      - generic [ref=f4e24]:
+        - generic [ref=f4e25]:
+          - img "Dynamyst foto" [ref=f4e26]
+          - button "Foto sebelumnya" [ref=f4e27] [cursor=pointer]
+          - button "Foto berikutnya" [ref=f4e30] [cursor=pointer]
+        - generic [ref=f4e33]:
+          - button "Lihat foto 1" [ref=f4e34] [cursor=pointer]
+          - button "Lihat foto 2" [ref=f4e35] [cursor=pointer]
+      - generic [ref=f4e36]:
+        - generic [ref=f4e37]:
+          - generic [ref=f4e38]: edp
+          - generic [ref=f4e39]: Pria
+        - generic [ref=f4e40]:
+          - heading "Dynamyst" [level=1] [ref=f4e41]
+          - paragraph [ref=f4e42]: Fresh. Bold. Confident.
+        - generic [ref=f4e43]: 5/5 · 5 ulasan
+        - paragraph [ref=f4e56]: Aroma fresh, sporty, dan clean dengan sentuhan hangat yang memberikan kesan maskulin, energik, dan percaya diri. Cocok digunakan untuk aktivitas sehari-hari.
+        - generic [ref=f4e57]: Rp 45.000
+        - generic [ref=f4e59]:
+          - generic [ref=f4e60]:
+            - generic [ref=f4e62]:
+              - button "Kurangi jumlah" [ref=f4e63] [cursor=pointer]
+              - generic [ref=f4e65]: "1"
+              - button "Tambah jumlah" [ref=f4e66] [cursor=pointer]
+            - generic [ref=f4e68]: Tersedia 30
+          - button "Tambah ke Keranjang" [ref=f4e69] [cursor=pointer]
+    - generic [ref=f4e70]:
+      - heading "Ulasan Pelanggan (5)" [level=2] [ref=f4e71]
+      - generic [ref=f4e72]:
+        - generic [ref=f4e73]:
+          - generic [ref=f4e75]:
+            - paragraph [ref=f4e76]: Rafi A.
+            - paragraph [ref=f4e77]: 18 Aug 2026
+          - paragraph [ref=f4e89]: Aromanya fresh banget, tahan lama juga. Udah beli 3 kali!
+        - generic [ref=f4e90]:
+          - generic [ref=f4e92]:
+            - paragraph [ref=f4e93]: Budi S.
+            - paragraph [ref=f4e94]: 10 Aug 2026
+          - paragraph [ref=f4e106]: Packaging rapi, aroma sesuai deskripsi. Akan repeat order.
+        - generic [ref=f4e107]:
+          - generic [ref=f4e109]:
+            - paragraph [ref=f4e110]: Arif W.
+            - paragraph [ref=f4e111]: 08 Aug 2026
+          - paragraph [ref=f4e123]: Sudah coba banyak parfum lokal, ini yang paling nempel di kulit. Recommended!
+      - button "Lihat 2 ulasan lainnya" [ref=f4e125] [cursor=pointer]
+    - heading "Produk Lainnya" [level=2] [ref=f4e127]
+  - contentinfo [ref=f4e128]:
+    - generic [ref=f4e129]:
+      - generic [ref=f4e130]:
+        - generic [ref=f4e131]:
+          - link "Perfu.me — halaman beranda" [ref=f4e132] [cursor=pointer]:
+            - /url: /
+            - text: Perfu.me
+          - paragraph [ref=f4e133]: Parfum signature dan inspired scent pilihan — wangi berkarakter dengan harga yang terjangkau untuk semua kalangan.
+          - generic [ref=f4e134]:
+            - link "Instagram Perfu.me" [ref=f4e135] [cursor=pointer]:
+              - /url: https://instagram.com/perfu.mefragrance
+            - link "TikTok Perfu.me" [ref=f4e138] [cursor=pointer]:
+              - /url: "#"
+            - link "WhatsApp Perfu.me" [ref=f4e141] [cursor=pointer]:
+              - /url: https://wa.me/6281383415432
+        - generic [ref=f4e144]:
+          - paragraph [ref=f4e145]: Navigasi
+          - list [ref=f4e146]:
+            - listitem [ref=f4e147]:
+              - link "Home" [ref=f4e148] [cursor=pointer]:
+                - /url: /
+            - listitem [ref=f4e149]:
+              - link "Produk" [ref=f4e150] [cursor=pointer]:
+                - /url: /products
+            - listitem [ref=f4e151]:
+              - link "Keranjang" [ref=f4e152] [cursor=pointer]:
+                - /url: /cart
+        - generic [ref=f4e153]:
+          - paragraph [ref=f4e154]: Informasi
+          - list [ref=f4e155]:
+            - listitem [ref=f4e156]:
+              - link "Tentang Kami" [ref=f4e157] [cursor=pointer]:
+                - /url: "#"
+            - listitem [ref=f4e158]:
+              - link "Cara Pemesanan" [ref=f4e159] [cursor=pointer]:
+                - /url: "#"
+            - listitem [ref=f4e160]:
+              - link "Kebijakan Privasi" [ref=f4e161] [cursor=pointer]:
+                - /url: "#"
+            - listitem [ref=f4e162]:
+              - link "Syarat & Ketentuan" [ref=f4e163] [cursor=pointer]:
+                - /url: "#"
+      - generic [ref=f4e164]:
+        - paragraph [ref=f4e165]: © 2026 Perfu.me. Semua hak dilindungi.
+        - paragraph [ref=f4e166]: Made with care in Indonesia.
+  - link "Chat via WhatsApp" [ref=f4e168] [cursor=pointer]:
+    - /url: https://wa.me/6281383415432

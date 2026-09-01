@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, MapPin, MapPin as MapPinFilled } from 'lucide-react';
 import { CheckoutStepper } from '../components/layout/CheckoutStepper';
 import { Input, TextArea } from '../components/ui/Input';
-import { Combobox } from '../components/form/Combobox';
+import { Combobox } from '../components/ui/Combobox';
 import { useToast } from '../context/ToastContext';
 
 const API_BASE = 'https://wilayah.id/api';
